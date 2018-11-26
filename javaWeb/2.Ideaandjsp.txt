@@ -1,0 +1,356 @@
+使用eclipse 开发jsp
+	浏览器可以直接访问web文件中的index.jsp
+	例如通过http://localhost:8080/test/index.jsp
+	但是web-inf中的文件，无法通过客户端直接访问，只能通过请求转发进行访问
+注意：并不是任何的内部跳转都能访问WEB-INF ,原因是请求转发 和重定向
+
+3.配置tomcat运行时环境  jsp<->servlet 同时运行jsp和servlet
+ 方法一：将servlet-api.jar 加入到项目中的构建路径
+ 方法二：add library->Server Runtime
+
+ 4.部署tomcat 在 servers面板 新建一个tomcat实例 再在该实例中 部署项目 右键-add 之后运行
+ 一般建议将eclipse中的tomcat和本地tomcat配置信息保持一致，将eclipse 中的tomcat设置为托管模式：
+ 【第一】创建tomcat实例之后，双击选择Server location的第二项。
+5.统一字符集编码
+get方式如果出现乱码怎么解决：tomcat7(ISO-8859-1)
+	方法一：统一每一个变量的编码String name=new String (旧编码,"utf-8");
+	方法二：修改server.xml，一次性的更改tomcat默认在该端口号的位置增加 URIEncoding="UTF-8"
+  建议使用tomcat时，首先在server.xml中修改增加 URIEncoding="UTF-8"
+post方式
+	//配置信息
+            request.setCharacterEncoding("UTF-8");
+  编码分类 设置jsp文件的编码（jsp文件中的pageEncoding属性）：jsp->java
+		   设置浏览器读取jsp的编码（jsp文件中content属性）
+		   一般将上述设置成一致的编码，推荐UTF-8国际编码
+  文本编码：统一设置将整个项目中的文件统一设置		   
+			设置某个项目中的文件设置成统一编码
+			设置单独文件为要求编码
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>		
+jsp页面元素：
+		a.脚本Scriptlet	
+				<% java代码 定义局部变量、java语句 %>
+					例 <%   String name ="zhangsan"; out.print("hello..."+name);  %>
+				<%!   全局变量、定义方法   %>
+					例<%! public String book;//全局变量
+						public void init(){
+								......
+							}		%>
+				<%=输出表达式 %>
+					<%= "hello..."+name %>
+				一般而言，修改web.xml 配置文件、java代码，需要重启tomcat服务，但是如果修改JSP \html\css\js 不需要重启。
+				加<br />进行回车，用Java语言无法实现回车效果。out.print 和<%=%>可直接识别HTML元素
+b.指令标识	
+	page 指令
+	<%@ Page.....%>
+	page指令属性：language：jsp页面使用的脚本语言
+				  import：导入类
+					<%@ page contentType="text/html;charset=UTF-8" language="java" import="java.util.Date" %>
+				  pageEncoding jsp自身编码  jsp->java
+				  contentType 浏览器解析编码 
+c.注释 
+		HTML注释<!---->
+		java注释 // /*...*/
+		jsp注释  <%-- --%>
+Jsp内置对象（九大自带的不需要new 也能使用的对象）
+		out：向客户端输出，输出对象
+		pageContext 
+		request：
+				请求对象，存储客户端想服务端发送的请求信息
+				常见方法：
+					String getParameter(String name):根据请求的字段名key<input >标签的name属性值 返回字段值value值
+					String getParameterValues(String name);用于请求的字段名key 返回多个值(checkBox)
+					void setCharacterEncoding("编码格式utf-8")：设置请求编码(tomcat8以后默认utf-8)
+					getRequestDispatcher("b.jsp").forward(request,response);请求转发的方式跳转页面A->B
+					ServletContext getServerContext():获取项目的ServletContext对象
+					示例：
+					注册register.jsp 
+						<%--
+					  Created by IntelliJ IDEA.
+					  User: lenovo
+					  Date: 2018/11/11
+					  Time: 16:16
+					  To change this template use File | Settings | File Templates.
+					--%>
+					<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+					<html>
+					<head>
+						<title>注册</title>
+					</head>
+					<body>
+							<form action="show.jsp">
+								用户名:<input type="text" name="uname" />
+								<br/>
+								密 码:<input type="password" name="upwd" />
+								<br/>
+								年 龄:<input type="text" name="uage" />
+								<br/>
+								兴趣爱好:
+								<input type="checkbox" name="uhobby" value="足球" />足球
+								<input type="checkbox" name="uhobby" value="篮球"/>篮球
+								<input type="checkbox" name="uhobby" value="乒乓球"/>乒乓球<br />
+								<input type="submit" name="注册">
+							</form>
+					</body>
+					</html>
+					show.jsp
+					<%--
+  Created by IntelliJ IDEA.
+  User: lenovo
+  Date: 2018/11/11
+  Time: 16:16
+  To change this template use File | Settings | File Templates.
+--%>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<html>
+<head>
+    <title>展示</title>
+</head>
+<body>
+        <%
+            //配置信息
+            request.setCharacterEncoding("UTF-8");
+            String name=new String(request.getParameter("uname").getBytes("ISO-8859-1"),"UTF-8");
+            int age=Integer.parseInt(request.getParameter("uage"));
+            String pwd=request.getParameter("upwd");
+            String[] habby =request.getParameterValues("uhobby");
+        %>
+        注册成功，信息如下:<br />
+        姓名:<%=name%><br/>
+        年龄:<%=age%><br/>
+        密码: <%=pwd%><br/>
+        爱好:
+       <%
+           if(habby!=null) {
+               for (String temp : habby) {
+                   String buf=new String(temp.getBytes("ISO-8859-1"),"UTF-8");
+                   out.print(buf);
+					   }
+				   }
+			   %>
+		</body>
+		</html>
+			地址栏请求 连接/文件？参数名1=参数值1&参数名2=参数值2
+			get提交方式：method="get" 和地址栏请求 超链接 方式 默认都属于get提交
+			post和get的区别：
+				get方式在地址栏显示请求信息(地址栏的信息有限，4-5kb)，post不会显示
+				文件上传，必须是post
+				推荐使用post
+		response :相应对象
+		提供方法：
+				void addCookie(Cookie cookie);服务端向客户端增加cookie对象
+				void sendRedirect(String location) throws IOEception: 页面跳转的一种方式（重定向）,重定向地址改变为指定页面，而请求转发保持原页面，使用重定向会导致数据丢失，请求转发不会
+				void setContentType(String type) 设置服务端响应编码（设置服务端contentType）
+			请求转发和重定向的区别：a.地址栏是否改变，请求转发保持原页面，而重定向变为指定页面;
+										b.是否保留第一次请求中的数据，请求转发保留，重定向不保留；
+										c.请求次数，请求转发1次，重定向2次；
+			转发、重定向；
+						转发： 客户端（张三）--->[ 服务端1（服务端口1）--->服务端口2(服务端口2)]--->zhangsan
+						重定向	客户端--->服务端口1 --->去找B   
+								客户端---->服务端口B---->客户端
+				实例 重定向
+					login.jsp -->登录是否合法
+					<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+						<html>
+						<head>
+							<title>登录</title>
+						</head>
+						<body>
+							<form action="check.jsp" method="post">
+								用户名:<input type="text" name="uname"><br/>
+								密码: <input type="password" name="upwd"><br />
+								<input type="submit" value="登录"><br/>
+							</form>
+						</body>
+						</html>
+					check.jsp
+							<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+								<html>
+								<head>
+									<title>校验检查</title>
+								</head>
+								<body>
+									<%
+										request.setCharacterEncoding("utf-8");
+										String name=request.getParameter("uname");
+										String pwd=request.getParameter("upwd");
+										if(name.equalsIgnoreCase("zhangsan")&&pwd.equalsIgnoreCase("abc")){//假设用户名必须为张三&&密码必须是abc
+
+											request.getRequestDispatcher("success.jsp").forward(request,response);
+										}else {
+											//登录失败
+											out.print("用户名或密码有误！！！");
+										}
+									%>
+								</body>
+								</html>
+					success.jsp
+						<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+							<html>
+							<head>
+								<title>登录成功</title>
+							</head>
+							<body>
+									登录成功:<br />
+									欢迎您:
+									<%
+										String name= request.getParameter("uname");
+										out.print(name);
+									%>
+							</body>
+							</html>
+
+		application  全局对象
+			String getContextPath() 获取虚拟路径
+			String getRealPath(String path) 获取虚拟路径的绝对路径
+			
+			
+		config
+		session (服务端)
+			cookie(客户端，不是内置对象需要 创建)：cookie是由服务端场产生的，在发送给客户端保存。
+				相当于本地缓存：客户端-第一次请求-->服务端(资源)--->存储在客户端缓存处 提高效率 
+				作用：提高访问服务器的 效率，但安全性较差。
+			 客户端在第一次请求服务时，如果服务端发现次请求没有JSESSIONID的cookie，则会产生一个JSESSIONID=sessionID的cookie对象。
+			    cookie:key=value javax.servlet.http.Cookie 产生
+				public Cookie(String key,String value)
+				String  getName() 获取key
+				String getValue()获取value
+				void setMaxAge(int expiry)；设置最大有效期
+			服务端发送给客户端：
+				response.addCookie(Cookie cookie);
+				页面跳转（转发重定向都可以）
+				客户端获取cookie
+					request.getCookies();//获取所有cookie 无法只拿一个
+				通过F12发现，除了自己设置的cookie对象外，还有一个name为JSESSIONID的一个cookie对象。
+			cookie经典案例：使用cookie记住用户
+				<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+				<html>
+				<head>
+					<title>登录</title>
+				</head>
+				<body>
+					<%!
+					   String uname;
+					%>
+					<%
+						Cookie[] cookies=request.getCookies();
+						for(Cookie cookie:cookies){
+							if(cookie.getName().equals("uname"))
+								uname=cookie.getValue();
+						}
+						%>
+				<form action="check.jsp" method="post">
+					用户名:<input type="text" name="uname" value="<%=(uname==null?"":uname)%>"><br/>
+					密码: <input type="password" name="upwd"><br />
+					<input type="submit" value="登录"><br/>
+				</form>
+					</body>
+					</html>
+					
+					<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+					<html>
+					<head>
+						<title>校验检查</title>
+					</head>
+					<body>
+						<%
+							request.setCharacterEncoding("utf-8");
+							String name=request.getParameter("uname");
+							String pwd=request.getParameter("upwd");
+							//将用户名加入到cookie中
+							Cookie cookie1=new Cookie("uname",name);//建议cookie中只保存英文或数字，不然需要解码
+							cookie1.setMaxAge(10);
+							response.addCookie(cookie1);
+
+							response.sendRedirect("result.jsp");
+						%>
+					</body>
+					</html>
+					<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+					<html>
+					<head>
+						<title>结果</title>
+					</head>
+					<body>
+							登录成功:<br />
+							欢迎您:
+							<%
+								String name= request.getParameter("uname");
+								out.print(name);
+							%>
+					</body>
+					</html>
+
+			Session: 会话 浏览网站从一开始到关闭是一次会话  
+			        淘宝购物浏览、付款、退出是一次会话 
+					
+				session机制：客户端第一次访问服务器时产生一个session对象（匹配JSESSIONID和sessionID），保存客户信息，session自唯一的一个sessionID，
+				服务端会产生一个cookie，并且cookie的name=JSESSIONID,value=服务端sessionID的值，然后服务会在响应客户端的同个cookie(JSESSIONID)
+				时，将cookie发送给客户端，至此客户端就有了JSESSIONID的值，用户服务端和客户端通过cookie对应。
+				客户端第二次请求服务对象时，根据JSESSIONID去服务端寻找session对象，如果匹配成功，说明此用户不是第一次登陆
+			a.session 存储在服务端
+			b.session是在同一个用户访问时共享
+			c.实现机制：第一次客户请求时产生一个sessionID并赋值给cookie的JSESSIONID，然后发给客户端。
+			
+			session方法：
+				String getId()获取sessionID
+				Boolean isNew() 判断是否第一次访问
+				void invalidate() 使session失效 退出登录，注销
+				setAttribute(); 
+				getAttribute();
+				
+				void setMaxInactiveInterval(秒)； 设置最大有效非活动时间
+				int getMaxInactiveInterval() 获取最大有效非活动时间
+				request只在同一次请求有效
+				session共享一次会话
+			验证sessionID和JSESSIONID是同一个。
+				login.jsp 
+				<form action="check.jsp">
+				   用户名: <input type="text" name="uname"><br />
+					密 码:<input type="password" name="upwd"><br />
+					<input type="submit" value="登录">
+				</form>
+				check.jsp
+				 <%
+					request.setCharacterEncoding("utf-8");
+					String name=request.getParameter("uname");
+					String pwd=request.getParameter("upwd");
+					System.out.println("sessionId"+session.getId());
+					if(name.equalsIgnoreCase("zs")&&pwd.equalsIgnoreCase("abc")){
+						   //只要登录成功，session中才会存在uname/upwd
+						   session.setAttribute("uname",name);
+						   session.setAttribute("upwd",pwd);
+						   Cookie cookie=new Cookie("uname",name);
+						   response.addCookie(cookie);
+						   request.getRequestDispatcher("welcome.jsp").forward(request,response);
+					}else{
+						//登录失败
+						response.sendRedirect("login.jsp");
+					}
+				%>
+				welcome.jsp
+					  欢迎您！！！
+					<%
+						String name=(String)session.getAttribute("uname");
+						if(name!=null){
+							out.print(name);
+							%>
+					<a href="invalidate.jsp">注销</a>
+					<%
+						}else{
+						 response.sendRedirect("login.jsp");
+						}
+					%>
+				a.jsp
+					  <%
+						  out.print(session.getAttribute("uname"));
+						  Cookie []cookies=request.getCookies();
+						  for(Cookie cookie1:cookies){
+						   if(cookie1.getName().equalsIgnoreCase("JSESSIONID")){
+								out.print(cookie1.getValue());
+						   }
+
+						  }
+						%>
+						
+		page 
+		exception

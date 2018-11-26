@@ -1,0 +1,28 @@
+SORM(simple object relathionship Mapping)的基本思想及框架结构
+		设计一个可以实现对象和SQL自动映射的框架，但是整体用法和设计比
+		Hibernate简单，看点不必要的功能，会穿插使用设计模式。
+		增加   将对象对应成sql语句，执行SQL，插入数据库中，
+		删除   根据对象主键值，生成SQL，执行，从库中删除
+		修改    根据对象需要修改属性的值，生成SQL，执行
+核心架构：
+		Query接口：负责查询（对外提供服务的核心类）
+		QueryFactor类：负责配置信息创建query对象
+		TypeCOnvertor接口:负责类型转换
+		TableContext类：
+		负责获取管理数据库所有表结构和类结构的关系，并可以根据表结构生成类结构。
+		DBManager类：
+		根据配置信息，维持连接对象的管理（增加连接池功能）
+		工具类：
+		JDBCUtils封装常用JDBC操作， StringUtils封装常用字符串操作
+		JavaFileUtils封装java文件操作，ReflecUtils 分装常用反射操作。
+核心bean ,封装数据：
+			ColumnInfo 封装表中一个字段的信息（字段类型，字段名，键值类型）
+			Configuration 封装配置文件信息
+			TableInfo 分装一张表的信息
+针对SORM框架的说明：
+	--核心思想 使用简单 性能高 极易上手
+	--配置文件
+	目前使用资源文件，后期项目复杂后可以增加xml文件配置和注解
+	类名由表名生成，只有首字母大写有区别，其他无区别
+	--java对象的属性由表中字段生成完全对应
+	目前只支持表中有一个主键，联合主键不支持。

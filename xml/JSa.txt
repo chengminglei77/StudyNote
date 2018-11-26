@@ -1,0 +1,114 @@
+JSAX的缺点
+因为它是在一个处理的方式，而不是随机访问XML文档。
+如果需要跟踪的数据分析器已经看到或更改项目的顺序，必须编写代码和数据存储以自己方式处理。
+	XMLEventReader类
+	因为在解析XML文档时该类提供可用于迭代事件事件迭代器
+	StartElement asStartElement() - 用于检索值和元素的属性。
+	EndElement asEndElement() - 调用元件的端部。
+	Characters asCharacters() - 可用于获得字符，例如一个CDATA，空白等。
+XMLEventWriter类
+	此接口指定创建事件的方法。
+	add(Event event) - 添加包含元素XML事件。
+	XMLStreamReader Class
+因为在解析XML文档时该类提供可用于迭代事件事件迭代器
+	int next() - 用于检索下一个事件。
+	boolean hasNext() - 用于检查其他事件的存在与否
+	String getText() - 用于获取一个元素的文本
+	String getLocalName() - 用于获取一个元素的名称
+XMLStreamWriter类
+此接口指定创建事件的方法
+	writeStartElement(String localName) - 加入定名称开始元素。
+	writeEndElement(String localName) - 添加指定名称的结束元素。
+	writeAttribute(String localName, String value) - 编写属性到元素
+	
+	实例1.xml
+	<?xml version="1.0"?>
+		<class>
+		   <student rollno="393">
+			  <firstname>dinkar</firstname>
+			  <lastname>kad</lastname>
+			  <nickname>dinkar</nickname>
+			  <marks>85</marks>
+		   </student>
+		   <student rollno="493">
+			  <firstname>Vaneet</firstname>
+			  <lastname>Gupta</lastname>
+			  <nickname>vinni</nickname>
+			  <marks>95</marks>
+		   </student>
+		   <student rollno="593">
+			  <firstname>jasvir</firstname>
+			  <lastname>singn</lastname>
+			  <nickname>jazz</nickname>
+			  <marks>90</marks>
+		   </student>
+		</class>
+	解析程序：
+ public static void main(String[] args) {
+      boolean bFirstName = false;
+      boolean bLastName = false;
+      boolean bNickName = false;
+      boolean bMarks = false;
+      try {
+         XMLInputFactory factory = XMLInputFactory.newInstance();
+         XMLEventReader eventReader = factory.createXMLEventReader(new FileReader("input.txt"));
+            while(eventReader.hasNext()){
+               XMLEvent event = eventReader.nextEvent();
+               switch(event.getEventType()){
+                  case XMLStreamConstants.START_ELEMENT:
+                     StartElement startElement = event.asStartElement();
+                     String qName = startElement.getName().getLocalPart();
+                     if (qName.equalsIgnoreCase("student")) {
+                        System.out.println("Start Element : student");
+                        Iterator<Attribute> attributes = startElement.getAttributes();
+                        String rollNo = attributes.next().getValue();
+                        System.out.println("Roll No : " + rollNo);
+                     } else if (qName.equalsIgnoreCase("firstname")) {
+                        bFirstName = true;
+                     } else if (qName.equalsIgnoreCase("lastname")) {
+                        bLastName = true;
+                     } else if (qName.equalsIgnoreCase("nickname")) {
+                        bNickName = true;
+                     }
+                     else if (qName.equalsIgnoreCase("marks")) {
+                        bMarks = true;
+                     }                     
+                     break;
+                  case XMLStreamConstants.CHARACTERS:
+                     Characters characters = event.asCharacters();
+                     if(bFirstName){
+                        System.out.println("First Name: " 
+                        + characters.getData());
+                        bFirstName = false;
+                     }
+                     if(bLastName){
+                        System.out.println("Last Name: " 
+                        + characters.getData());
+                        bLastName = false;
+                     }
+                     if(bNickName){
+                        System.out.println("Nick Name: " 
+                        + characters.getData());
+                        bNickName = false;
+                     }
+                     if(bMarks){
+                        System.out.println("Marks: " 
+                        + characters.getData());
+                        bMarks = false;
+                     }
+                     break;
+                  case  XMLStreamConstants.END_ELEMENT:
+                     EndElement endElement = event.asEndElement();
+                     if(endElement.getName().getLocalPart().equalsIgnoreCase("student")){
+                        System.out.println("End Element : student");
+                        System.out.println();
+                     }
+                     break;
+               }         
+            }
+         } catch (FileNotFoundException e) {
+            e.printStackTrace();
+         } catch (XMLStreamException e) {
+            e.printStackTrace();
+      }
+   }	

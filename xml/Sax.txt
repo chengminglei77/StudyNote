@@ -1,0 +1,273 @@
+SAX解析XML文件采用事件驱动的方式进行，也就是说，SAX是逐行扫描文件，遇到符合条件的设定条件后就会触发特定的事件，回调你写好的事件处理程序。使用SAX的优势在于其解析速度较快，相对于DOM而言占用内存较少。而且SAX在解析文件的过程中得到自己需要的信息后可以随时终止解析，并不一定要等文件全部解析完毕。凡事有利必有弊，其劣势在于SAX采用的是流式处理方式，当遇到某个标签的时候，它并不会记录下以前所遇到的标签，也就是说，在处理某个标签的时候，比如在startElement方法中，所能够得到的信息就是标签的名字和属性，至于标签内部的嵌套结构，上层标签、下层标签以及其兄弟节点的名称等等与其结构相关的信息都是不得而知的。实际上就是把XML文件的结构信息丢掉了，如果需要得到这些信息的话，只能你自己在程序里进行处理了。所以相对DOM而言，SAX处理XML文档没有DOM方便，SAX处理的过程相对DOM而言也比较复杂。
+
+        SAX采用事件处理的方式解析XML文件，利用 SAX 解析 XML 文档，涉及两个部分：解析器和事件处理器：
+解析器可以使用JAXP的API创建，创建出SAX解析器后，就可以指定解析器去解析某个XML文档。
+解析器采用SAX方式在解析某个XML文档时，它只要解析到XML文档的一个组成部分，都会去调用事件处理器的一个方法，解析器在调用事件处理器的方法时，会把当前解析到的xml文件内容作为方法的参数传递给事件处理器。
+事件处理器由程序员编写，程序员通过事件处理器中方法的参数，就可以很轻松地得到sax解析器解析到的数据，从而可以决定如何对数据进行处理。
+--------------------- 
+SAX是一个流接口用于XML的，这意味着使用SAX应用接收事件通知有关XML文档被处理的元素，属性，在按顺序每次开始在文档的顶部，并与所述闭合结束根元素。
+		读取XML文件从上到下，构成一个结构完整的XML文档的标记
+		令牌以相同的顺序进行处理，它们出现在文档中
+		报告应用程序，因为它们所出现解析器遇到标记的特性
+		应用程序提供了必须的解析器注册的“事件”处理程序
+		作为标记标识，在处理程序回调方法相关信息调用
+应该使用SAX解析器的时候：
+		可以在XML文档从上往下处理以线性方式
+		该文件并不深层次嵌套
+		处理一个非常大的XML文档，DOM树会占用太多的内存。典型DOM的实现使用10字节的存储器以表示XML的一个字节
+		解决的问题涉及的XML文档的一部分
+		数据是可用的，只要它是由解析器看出，这样的SAX可以很好地用于到达流的XML文档
+
+SAX的缺点
+	它是在一个只进入处理随机访问方式XML文档
+	如果需要跟踪的数据分析器已经看到或更改项目的顺序，必须自已编写代码和数据存储
+	ContentHandler接口
+	此接口指定SAX解析器用来通知XML文档，已经看到部件应用程序的回调方法。
+	void startDocument() - 调用在一个文件的开头。
+	void endDocument() - 调用在一个文件的末尾。
+	void startElement(String uri, String localName, String qName, Attributes atts) - 调用在一个元素的开头。
+	void endElement(String uri, String localName,String qName) - 调用在一个元件的末端。
+	void characters(char[] ch, int start, int length) - 字符数据出现时调用。
+	void ignorableWhitespace( char[] ch, int start, int length) - 当DTD是当前和忽略空白遇到时调用。
+	void processingInstruction(String target, String data) - 当处理指令的认可时调用。
+	void setDocumentLocator(Locator locator)) - 提供可用于识别文档中的位置的定位器。
+	void skippedEntity(String name) - 一个尚未解决实体遇到时调用。
+	void startPrefixMapping(String prefix, String uri) - 当一个新的命名空间的映射定义调用。
+	void endPrefixMapping(String prefix) - 当一个命名空间定义结束其范围时调用。
+	属性接口
+	这种接口指定用于处理连接到一个元素的属性的方法。
+	int getLength() - 返回属性的数目。
+	String getQName(int index)
+	String getValue(int index)
+	String getValue(String qname)	
+实例1 .xml
+		<?xml version="1.0"?>
+		<class>
+			<student rollno="393">
+				<firstname>dinkar</firstname>
+				<lastname>kad</lastname>
+				<nickname>dinkar</nickname>
+				<marks>85</marks>
+			</student>
+			<student rollno="493">
+				<firstname>Vaneet</firstname>
+				<lastname>Gupta</lastname>
+				<nickname>vinni</nickname>
+				<marks>95</marks>
+			</student>
+			<student rollno="593">
+				<firstname>jasvir</firstname>
+				<lastname>singn</lastname>
+				<nickname>jazz</nickname>
+				<marks>90</marks>
+			</student>
+		</class>
+	解析代码：自己定义的事件处理器对象UserHanlder
+	package com.cheng.xml.sax;
+
+		import org.xml.sax.Attributes;
+		import org.xml.sax.SAXException;
+		import org.xml.sax.helpers.DefaultHandler;
+
+		public class UserHandler extends DefaultHandler {
+			boolean bFirstName=false;
+			boolean bLastName=false;
+			boolean bNickName=false;
+			boolean bMarks=false;
+			@Override
+			public void startElement(String uri, String localName, String qName, Attributes attributes)  throws SAXException{
+			 if(qName.equalsIgnoreCase("student")){
+			  String rollNo=attributes.getValue("rollno");
+			  System.out.println("Roll No: "+rollNo);
+			 }else if(qName.equalsIgnoreCase("firstname")){
+			   bFirstName=true;
+			 }else if(qName.equalsIgnoreCase("lastname")){
+			  bLastName=true;
+			 }else if(qName.equalsIgnoreCase("nickname")){
+			  bNickName=true;
+			 }else if(qName.equalsIgnoreCase("marks")){
+			  bMarks=true;
+			 }
+			}
+			@Override
+			public void endElement(String uri, String localName,String qName)  throws SAXException{
+			   if(qName.equalsIgnoreCase("student")){
+				System.out.println("End Element: "+qName);
+			   }
+			}
+			@Override
+			public void characters(char ch[],int start,int length)  throws SAXException {
+				if(bFirstName){
+				 System.out.println("First name: "+new String(ch,start,length));
+				 bFirstName=false;
+				}else if(bLastName){
+				 System.out.println("Last name: "+new String(ch,start,length));
+				   bLastName=false;
+				}else if(bNickName){
+				 System.out.println("Nick name: "+new String(ch,start,length));
+				  bNickName=false;
+				}else if(bMarks){
+				 System.out.println("Marks: "+new String(ch,start,length));
+				   bMarks=false;
+				}
+			}
+		}
+		测试代码
+		
+		public static void test1() {
+      try {
+       File input=new File("E:/java/ParserDemo/src/com/cheng/xml/sax/text1.xml");
+       /**使用SAXParserFactory创建SAX解析工厂  */
+       SAXParserFactory factory=SAXParserFactory.newInstance();
+       /**通过SAX解析工厂得到解析器对象 */
+       SAXParser saxParser=factory.newSAXParser();
+       /**通过解析saxParser的parse()方法设定解析的文件和自己定义的事件处理器对象*/
+       UserHandler userHandler=new UserHandler();
+       saxParser.parse(input,userHandler);
+      } catch (ParserConfigurationException e) {
+       e.printStackTrace();
+      } catch (SAXException e) {
+       e.printStackTrace();
+      } catch (IOException e) {
+       e.printStackTrace();
+      }
+     }
+	public static void test2(){
+      try {
+       /**1.通过XMLReaderFactory创建XMLReader对象*/
+       XMLReader reader = XMLReaderFactory.createXMLReader();
+       /**2.设置事件处理器对象 */
+       reader.setContentHandler(new UserHandler());
+       /**读取要解析的xml文件*/
+       FileReader input=new FileReader("E:/java/ParserDemo/src/com/cheng/xml/sax/text1.xml");
+       /**4.指定解析的xml文件*/
+       reader.parse(new InputSource(input));
+      } catch (SAXException e) {
+       e.printStackTrace();
+      } catch (IOException e) {
+       e.printStackTrace();
+      }
+     }
+	  public static void test3(){
+
+      try {
+       /** 1.使用SAXParserFactory创建SAX解析工厂*/
+       SAXParserFactory spf = SAXParserFactory.newInstance();
+       /** 2.通过SAX解析工厂得到解析器对象*/
+       SAXParser sp = spf.newSAXParser();
+       /** 3.通过解析器对象得到一个XML的读取器*/
+       XMLReader xmlReader = sp.getXMLReader();
+       /** 4.设置读取器的事件处理器*/
+       xmlReader.setContentHandler(new UserHandler());
+       /** 5.解析xml文件*/
+       xmlReader.parse("E:/java/ParserDemo/src/com/cheng/xml/sax/text1.xml");
+      } catch (ParserConfigurationException e) {
+       e.printStackTrace();
+      } catch (SAXException e) {
+       e.printStackTrace();
+      } catch (IOException e) {
+       e.printStackTrace();
+      }
+     }
+	 xml.SAX查询Userhandler
+	   boolean bFirstName=false;
+    boolean bLastName=false;
+    boolean bNickName=false;
+    boolean bMarks=false;
+    /**查询增加代码*/
+    String rollNo=null;
+    /**END*/
+    @Override
+    /***
+     * 解析器在 XML 文档中的每个元素的开始调用此方法
+     * uri - 名称空间 URI，如果元素没有名称空间 URI，或者未执行名称空间处理，则为空字符串
+     * localName - 本地名称（不带前缀），如果未执行名称空间处理，则为空字符串
+     * qName - 限定名（带有前缀），如果限定名不可用，则为空字符串
+     * atts - 连接到元素上的属性。如果没有属性，则它将是空 Attributes 对象。
+     */
+    public void startElement(String uri, String localName, String qName, Attributes attributes)  throws SAXException{
+     if(qName.equalsIgnoreCase("student")){
+        rollNo=attributes.getValue("rollno");
+        /**查询屏蔽代码*/
+        //System.out.println("根元素: "+qName);
+        //System.out.println("Roll No: "+rollNo);
+        /**END*/
+     }/**查询增加代码*/
+     else if(("363").equals(rollNo)&&qName.equalsIgnoreCase("student")){
+          System.out.println("Start Element :" + qName);
+     }/**END*/
+     else if(qName.equalsIgnoreCase("firstname")){
+       bFirstName=true;
+     }else if(qName.equalsIgnoreCase("lastname")){
+      bLastName=true;
+     }else if(qName.equalsIgnoreCase("nickname")){
+      bNickName=true;
+     }else if(qName.equalsIgnoreCase("marks")){
+      bMarks=true;
+     }
+    }
+    @Override
+    /***
+     *SAX 解析器会在 XML 文档中每个元素的末尾调用此方法
+     *uri - 名称空间 URI，如果元素没有名称空间 URI，或者未执行名称空间处理，则为空字符串
+     *localName - 本地名称（不带前缀），如果未执行名称空间处理，则为空字符串
+     *qName - 限定的 XML 名称（带前缀），如果限定名不可用，则为空字符串
+     */
+    public void endElement(String uri, String localName,String qName)  throws SAXException{
+     /**查询屏蔽代码*/
+     //if(qName.equalsIgnoreCase("student")){
+       // System.out.println("End Element: "+qName);
+       //}
+     /**END*/
+     /**查询修改后代码*/
+     if (qName.equalsIgnoreCase("student")) {
+      if(("393").equals(rollNo)
+       && qName.equalsIgnoreCase("student"))
+       System.out.println("End Element :" + qName);
+     }
+     /**END*/
+    }
+    @Override
+    /***
+     *接收字符数据的通知,可以通过new String(ch,start,length)构造器，创建解析出来的字符串文本
+     * ch - 来自 XML 文档的字符
+     * start - 数组中的开始位置
+     * length - 从数组中读取的字符的个数
+     */
+    public void characters(char ch[],int start,int length)  throws SAXException {
+     /**查询屏蔽代码段*/
+//        if(bFirstName){
+//         System.out.println("First name: "+new String(ch,start,length));
+//         bFirstName=false;
+//        }else if(bLastName){
+//         System.out.println("Last name: "+new String(ch,start,length));
+//           bLastName=false;
+//        }else if(bNickName){
+//         System.out.println("Nick name: "+new String(ch,start,length));
+//          bNickName=false;
+//        }else if(bMarks){
+//         System.out.println("Marks: "+new String(ch,start,length));
+//           bMarks=false;
+//        }
+     /**END*/
+     /**查询代码段*/
+     if (bFirstName && ("393").equals(rollNo)) {
+      //age element, set Employee age
+      System.out.println("First Name: " +
+       new String(ch, start, length));
+      bFirstName = false;
+     } else if (bLastName && ("393").equals(rollNo)) {
+      System.out.println("Last Name: " +
+       new String(ch, start, length));
+      bLastName = false;
+     } else if (bNickName && ("393").equals(rollNo)) {
+      System.out.println("Nick Name: " +
+       new String(ch, start, length));
+      bNickName = false;
+     } else if (bMarks && ("393").equals(rollNo)) {
+      System.out.println("Marks: " +
+       new String(ch, start, length));
+      bMarks = false;
+     }
+     /**END*/
+   }

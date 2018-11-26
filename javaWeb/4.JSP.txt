@@ -1,0 +1,82 @@
+JSP的基本组成
+	A.jsp 中的指令标识
+		1.page指令即页面指令，可以定义在整个jsp页面范围内有效的属性，其使用格式如下
+			<%@ page attribute1="value1" attribute2="value2"....%>
+			除了import属性外，其他属性只能在指令中出现一次，page指令的具体属性如下：
+			<%@ page 
+				[language="java"]  设置当前页面脚本使用的语言，目前只能设置为java
+				[contentType="mimeType;charset=CHARSET"] 设置页面响应的MIME类型，通常被设置为text/html，如果设置不正确，客户端浏览器在显示HTML时，不能对HTML进行解释，而直接显示HTML代码，默认为ISO-8859-1
+				[import="{package.*},..."] 类似于java中的import语句 用来想jsp文件中导入需要用到的包，在page指令中可多次使用
+				[extends="package.class"] 用于指定将一个jsp页面转换为servlet后继承的类。在jsp中一般不设置
+				[session="true|false"] 默认为true 表示当前页面支持session
+				[buffer="none|8kb|size kb"] 用来设置out对象(jspWriter类对象)使用的缓冲区的大小
+				[autoflush="true|false"]  默认设置为true，表示缓冲区已满时，自动将其内容输出到客户端；若为false，当缓冲区中的内容超过其设置大小时，会产生“jsp buffer overflow”溢出异常
+				[isThreadSafe="true|false"] 默认为true，表示当前jsp页面被转换为servlet后，会以多线程的方式来处理来自多个用户的请求，若为false则转换为servlet会实现SigleThreadModel接口，该Servlet将以单线程的方式来处理用户请求
+				[info="text"] 设置任意字符串
+				[errorPage="relativeURL"] 该属性用来指定一个当前页面出现异常时所要调用的页面
+				[isErrorPage="true|false"] 将该属性设置为true，此时将在当前页面中可以使用exception异常对象，若在其他页面中通过errorpage属性制指定了该页面，则当页面出现异常时，会跳转到该页面，并在该页面中通过exception对象输出错误信息。
+				[isELInorged="true|false"] 通过该属性的设置可以使jsp容器忽略表达式"${}",设为true，表示忽略表达式语言
+				[pageEncoding="CHARSET"] %> 该属性用来社会组jsp页面字符的编码，默认值为ISO-8859-1
+		2.include指令 该指令用于在当前页面中，在当前使用该指令的位置嵌入其他文件，如果被包含文件中有可执行代码，则显示代码执行后的结果。
+			格式：<%@ include file ="文件的绝对路径或者相对路径"%>
+			file属性：该属性指被包含的文件，该属性不支持任何表达式，也不允许通过如下方式传递参数
+				<%@ include file="welcome.jsp?name=yxq" %>
+		3.taglib指令：
+			通过使用taglib指令，开发者就可以在页面中使用这些基本标识或自定义的额标识来完成特殊的功能
+				使用格式：<%@ taglib uri="tagURI" prefix="tagPrefix"%>
+				uri 该属性指定了标签描述符，该描述符是一个对标签描述文件*.tld 的映射，在tld 标签描述文件中定义了该标签库中的各个标签名称，并为每标签指定一个标签处理类
+				prefix属性： 该属性制定一个在页面中使用由URI属性指定的标签库的前缀。
+					例如 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prex="c" %>
+					<c：set var="name" value="hello">
+					上述代码通过<c:set >标签将hello值付给了变量name
+	B.HTML标记语言
+	C.嵌入大java代码片段
+	D.JSP表达式
+JSP的脚本标识：
+		A.jsp表达式
+			表达式用于向页面中输出信息，使用格式为
+				<%=变量或可以返回值的方法或java表达式 %>
+				jsp表达式在页面中被转换为servlet后，转换为out.print()方法
+				向页面输出内容<% String name="www.xxx.com"; %>
+								用户名：<%=name%>
+							结果：用户：www.xxx.com
+				生成动态的链接地址，例： <% String path="welcome.jsp"; %>
+										<a href="<%=path%>">链接到welcome.jsp</a>
+							上述代码生成如下HTML代码
+								<a href="welcome.jsp">链接到welcome.jsp</a>
+				动态指定Form表单处理页面，例如下面的代码 <% String name="login.jsp";%>
+															<form action="<%=name%>"></form>
+							上述代码生成如下HTML代码：
+									<form action="login.jsp"></form>
+				为通过循环语句生成的元素命名<% for(int i=0;i<3;i++){%>
+												file<%=i%>:<input type="text" name="<%="file"+i%>"><br />
+												<%}%>
+							上述代码生成如下HTML代码	
+											file0:<input type="text" name="file0"><br />
+											file1:<input type="text" name="file1"><br />
+											file1:<input type="text" name="file2"><br />
+		B.声明标识
+			<%! 声明变量或方法的代码 %>
+		C.脚本程序
+			<% java程序片段 %>
+jsp的注释
+		A.HTML中的注释 <!---提示信息--> 使用该方法注释的内容在客户端浏览器中是看不到的，但是可以通过查看源码看到注释信息
+		B.带有jsp表达式的注释 
+			在HTML注释中可以嵌入jsp表达式 <!--comment<%=expression%>-->
+			隐藏注释  <%---注释内容--%> 使用该注释不仅在客户端浏览器中看不到，通过源码也无法查看
+		C.脚本程序Scriptlet中的注释
+			单行注释 //  多行注释 /*  */   提示文档注释 /** */
+动作标识：
+		动作标识是在请求处理阶段按照页面中出现的顺序被执行的，只有他们被执行时才回去实现自己的所具有的功能。
+		格式： <动作标识名称 属性1="值1" 属性2="值2"..../>
+			或者<动作标识名称 属性1="值1" 属性2="值2".../>
+					<子动作 属性1="值1" 属性2="值2".../>
+				<动作标识名称>
+		<jsp:include>动作标识用于对应当前的页面包含的其他文件，这个文件可以是动态文件也可以说是静态文件。
+		<jsp:forward> 用来将请求转发到另外一个jsp、HTML或相关资源文件中，当该标识被执行后，当前页面将不会在被执行，而是去执行该标识指定的目标页面。
+		<jsp:useBean> 该标识可以在jsp 页面中创建一个bean实例，并且通过属性的设置可以将该实例存储到jsp中的指定范围，如果在指定的范围内已经存在指定的Bean实例，那么将使用这个实例吗， 不会重新创建。
+		<jsp:setProperty> 该标识通常与<jsp:useBean>标识一起使用，它将调用Bean中的setXXX()方法将请求中的参数赋值给由<jsp:useBean>标识创建的javaBean中对应的简单属性或索引属性。
+		<jsp:getProperty> 用来从指定的Bean中读取指定的属性值，并输出到页面中。该Bean必须具有getXXX()方法。
+		<jsp:fallback> 是<jsp:plugin>的子标识，当使用<jsp:plugin>标识加载java小应用程序或javaBean失败时，可通过<jsp:fallback>标识西安用户输出提示信息
+		<jsp:plugin> 可以在页面中插入java Applet小程序或者javaBean，他们能够在客户端运行，该标识会根据用客户端浏览器的版本装换成<object>或<embed>HTML元素。
+		<jsp:param>子标识，在该标识内可包含多个<jsp:param>子标识，每个子标识指定一个想要加载的java Applet或Bean中传递的参数。

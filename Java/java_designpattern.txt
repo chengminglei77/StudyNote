@@ -1,0 +1,1398 @@
+////https://www.sxt.cn/third-season/232.html
+创建型模式：
+-----单例模式，
+		保证一个类只有一个实例，并且提供一个访问该实例的全局访问点
+		应用场景 Windows的task manager  recycle bin 
+	 优点：由于单例模式只生产一个实例，减少系统性能开销，当一个对象的产生较多的资源时，如读配置	产生其他依赖对象时，则可以通过启动应用时直接产生一个单例对象，然后永久驻留内存的方式来解决
+			单利模式可以在系统设置全局的访问点，优化环共享资源访问，例如可以设置一个单例，来负责所有的数据表的映射处理
+	常见方法：
+	主要：
+-------------饿汉法（线程安全，调用效率高，但是，不能延时加载）-------------
+		  public class SingletonDemo1{
+		  //加载类式，立即加载这个对象，天然的是线程安全的
+			Private static /*final*/SingletonDemo1 s=new SingletonDemo1();//类初始化，立即加载这个对象
+			private SingletonDemo1(){}//私有化构造函数
+			public static /*synchronized*/SingletonDemo1 getInstance(){
+			return s;}
+		
+		  }
+		  public class Client{
+			public static void main(String[]args){
+				SingletonDemo1 s=SingletonDemo1.getInstance();
+				SingletonDemo1 s2=SingletonDemo1.getInstance();
+				System.out.println(s==s2);
+			}
+			
+		  }
+		  饿汉模式中，static变量会在类装载时完成初始化，此时也不会涉及多个线程对象访问该对象的问题，虚拟机保证只会装载一次该类，肯定不会发生并发访问的问题，因此，可省略synchronized关键字
+		  问题：如果只是加载类，而不是调用getInstance()，甚至用用没有调用
+----------懒汉式（线程安全，调用效率不高，但是可以延时加载）--------
+		public class SingletonDemo2{
+			private static SingletonDemo2 s;
+			private SingletonDemo2(){}//私有化构造器
+			public static synchronized SingletonDemo2 getInstance(){
+				if(s==null)
+				  s=new SingletonDemo2();
+				 return s;
+			}
+		}
+		要点 lazy 延迟加载，懒加载，真正用的时候菜加载
+		问题：资源利用率提高了，但是每次调用getInstance()方法都要同步，并发，效率低
+	其他：
+------	双重检测锁式（由于jVM底层内部模型原因，偶尔会出现问题）----------------------
+			这个模式将同步内容下方到if内部，提高了执行的效率，不必每次获取对象是都进行同步，只有第一次才同步创建了以后就没有必要了
+			问题： 由于编译器优化原因和jvm底层内部模型原因 偶尔回出现问题，不建议使用
+			public class SingletonDemo3{
+			private static SingletonDemo3 s=null;
+			private SingletonDemo3(){}//私有化构造器
+			public static SingletonDemo3 getInstance(){
+				if(s==null){
+				SingletonDemo3 sc;
+				synchronized(SingletonDemo2.class){
+					sc=s;
+					if(sc==null){
+						synchronized(SingletonDemo3.class){
+							if(sc==null)
+							 sc=new SingletonDemo3();
+						}
+					}
+					s=sc;
+				}
+			
+			}
+				 
+			return s;
+		}
+	}
+-------------静态内部类式（线程安全，调用效率高，但是可以延时加载）------
+		public class SingletonDemo4{
+			private static class SingletonClassInstance{
+				private static final SingletonDemo4 instance=new SingletonDemo4();
+			} 
+			public SingletonDemo4 getInstance(){
+				return SingletonClassInstance.instance;
+			}
+			private SingletonDemo4(){}
+		}
+		要点：外部类没有static属性，则不会像懒汉式那样立即加载对象，只有真正调用getInstance(),才会加载静态内部类，加载类时是线性安全的，instance是static final 类型，保证了内存中只有这样的一个实例存在，而且智能被赋值一次，从而保证了线性安全，兼备了并发高效调用和延迟加载的优势。
+		
+--------------枚举单例（线程安全，调用效率高，不能延时加载）---------------
+	public enum SingletonDemo5{
+		INSTANCE;//这个枚举元素本身就是单例
+		public void singletonOperation(){
+		//添加自己需要的方法
+		}
+	}
+	public static void main(string[]args){
+		SingletonDemo5 sd=SingletonDemo5.INSTANCE;
+		SingletonDemo5 sd2=SingletonDemo5.INSTANCE;
+		System.out.println(sd==sd2);
+	}
+	优点-实现简单枚举本身就是单例模式，有jVM从根本上提供保障，避免反射和反序列的漏洞。缺点，无延迟加载
+--------如何通过反射破解上面几种实现方式不包含枚举（可以在构造方式中手动抛出异常控制）
+--反序列化可以破解上面几种不包括枚举实现方式
+				可以通过定义readResolve()防止获得不同的对象
+				>>反序列化时如果对象所在的类定义了readResolve()（一种回调），定义返回哪个对象
+public class SingletonDemo6 {
+    private static SingletonDemo6 s;
+    private SingletonDemo6(){
+        if(s!=null){//创建不为空时，直接抛出异常RuntimeException
+            throw new RuntimeException();
+        }
+    }//私有化构造器
+    public static synchronized SingletonDemo6 getInstance(){
+        if(s==null)
+            s=new SingletonDemo6();
+        return s;
+    }
+	//反序列化时，直接调用这个方法，而不需要把序列化的哪个对象返回
+    public Object readResolve() throws ObjectStreamException{
+        return s;
+    }
+}
+public class Client1 {
+    public static void main(String[]args) throws ClassNotFoundException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        SingletonDemo6 s1=SingletonDemo6.getInstance();
+        SingletonDemo6 s2=SingletonDemo6.getInstance();
+        System.out.println(s1==s2);
+		//通过反射构直接调用私有构造器
+        Class<SingletonDemo6> clazz=(Class<SingletonDemo6>) Class.forName("com.xgcd.pattern.SingletonDemo6");
+        try {
+            Constructor<SingletonDemo6> c=clazz.getDeclaredConstructor(null);
+            c.setAccessible(true);
+            SingletonDemo6 sa=c.newInstance();
+            SingletonDemo6 sb=c.newInstance();
+            System.out.println(sa==sb);
+	    //通过反序列化方式构造多个对象
+        FileOutputStream fos=new FileOutputStream("F:/java/TestPattern/out/a.txt");
+        ObjectOutputStream oos  =new ObjectOutputStream(fos);
+        oos.writeObject(s1);
+        oos.close();
+        fos.close();
+        //反序列化
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream("F:/java/TestPattern/out/a.txt"));
+        SingletonDemo6 sc=(SingletonDemo6)ois.readObject();
+        System.out.println(s1==sc);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+
+	如何选用：单例对象 占用资源少 不需要延时加载 枚举类好于饿汉类
+				占用资源大 需要延时加载：静态内部类 好于懒汉类
+单例模式在多线程环境下的效率测试：
+	关注相对值即可，在不同环境下不同程序测得值完全不同
+	 饿汉式 22ms 懒汉式 636ms 静态内部类 28ms 枚举类 32ms 双重检查锁式 65ms
+	 CountDownLatch----同步辅助类，在完成一组正在其他线程中执行的操作之前，它允许一个线程或多个线程一直等待，CountDown（）当线程调此方法时，则计数减一，await() 调用此方法会一直阻塞当前线程，知道计数器值为0
+--------工厂模式，抽象工厂模式，建造者模式，原型模式，结构型模式
+		实现了创建者和调用者的分离
+		面向对象设计的基本原则：ocp(开闭原则，OPen-Closed Principle)一个软件的实体应当对扩展开发，对修改关闭
+								DIP(依赖倒转原则，Dependence Inversion Principle)要针对接口编程，不要针对实现编程
+								LoD(迪米特法则，Law of Demeter)只与你直接的朋友通信，而避免和陌生人通信。
+  核心本质：实例化对象，用工厂方法代替new操作，将选择实现类，创建对象统一管理和控制，从而将调用者和使用者跟我们的实现类解耦
+  工厂模式：
+  >>>>简单工厂模式：用来生产同一等级结构中的任意产品，（对于增加新的产品，需要修改已有的代码）
+  public interface Car {
+
+}
+package com.xgcd.factory;
+
+public class Audi implements Car {
+    public void run(){
+        System.out.println("奥迪在跑！！！");
+    }
+}
+
+public class Byd implements Car {
+    public void run(){
+        System.out.println("比亚迪在跑！！！");
+    }
+}
+public class CarFactory {
+    
+    //第一种方式
+    public static Car createCar(String type){
+        if("奥迪".equals(type)){
+            return new Audi();
+        }else if("比亚迪".equals(type)){
+            return new Byd();
+        }else{
+            return null;
+        }
+    }
+    //第二种方式
+    public static Car createAudi(){
+        return new Audi();
+    }
+    public static Car createByd(){
+        return new Byd();
+    }
+public class Client {
+    public static void main(String[]args){
+        //在非工厂模式下，调用者需要知道接口类，还需知道实现方法
+        Car c1=new Audi();
+        Car c2=new Byd();
+        ((Audi) c1).run();
+        ((Byd) c2).run();
+        //在简单工厂下的情况
+        Car c3=CarFactory.createCar("奥迪");
+        Car c4=CarFactory.createCar("比亚迪");
+        ((Audi) c3).run();
+        ((Byd) c4).run();
+    }
+}
+  >>>>工厂方法模式：用来生产同一等结构中的固定产品（支持增加任意产品）
+		>>>>为了避免简单工厂模式的缺点，不完全满足OCP工厂模式和降低工厂模式的最大不同在于，简单工厂模式只有一个工厂类，而工厂方法模式有一组实现了相同接口的工厂类
+		
+public interface CarFactory {
+    Car createCar();
+}
+
+public class BydFactory implements CarFactory {
+    public Car createCar() {
+        return new Byd();
+    }
+}
+public class AudiFactory implements CarFactory {
+    @Override
+    public Car createCar() {
+        return new Audi();
+    }
+}
+public class Clent {
+    public static void main(String[] args)    {
+        Car c1=new AudiFactory().createCar();
+        Car c2=new BydFactory().createCar();
+        ((Audi)c1).run();
+        ((Byd)c2).run();
+    }
+}
+简单工厂和工厂方法
+------结构复杂度，简单工厂占优势
+------代码复杂度，工厂模式占优势
+------客户端编程难度，简单工厂占优势
+------管理上的难度，扩展 是工厂模式易扩展，增加新类就好，而简单工厂需要修改已有类
+  >>>>抽象工厂模式：用来生产不同产品族的全部产品，（对于增加新的产品，无能为力，支持增加产品族）
+多个接口构成了产品族的时候使用抽象工厂模式，
+package com.xgcd.abstactFactory;
+
+public interface Engine {
+    public void run();
+    public void start();
+}
+class Lowengine implements Engine {
+    @Override
+    public void run() {
+        System.out.println("转得慢");
+    }
+
+    @Override
+    public void start() {
+        System.out.println("启动的慢");
+    }
+}
+class LuxuryEngine implements Engine {
+    @Override
+    public void run() {
+        System.out.println("跑得快");
+    }
+
+    @Override
+    public void start() {
+        System.out.println("启动得快");
+    }
+}
+package com.xgcd.abstactFactory;
+
+public interface Seat {
+    void message();
+}
+class LuxurySeat implements Seat{
+
+    @Override
+    public void message() {
+        System.out.println("可以自动按摩！！");
+    }
+}
+class LowSeat implements Seat{
+
+    @Override
+    public void message() {
+        System.out.println("不可以自动按摩！！");
+    }
+}
+package com.xgcd.abstactFactory;
+
+public interface Tyre {
+    void revolve();
+
+}
+class LuxuryTyre implements  Tyre{
+
+    @Override
+    public void revolve() {
+        System.out.println("旋转不磨损");
+    }
+}
+class LowTyre implements  Tyre{
+
+    @Override
+    public void revolve() {
+        System.out.println("旋转磨损");
+    }
+}
+package com.xgcd.abstactFactory;
+
+public interface CarFactory {
+     Engine createEngine();
+     Seat createSeat();
+     Tyre createTyre();
+}
+class LuxuryCarFactory implements CarFactory{
+
+    @Override
+    public Engine createEngine() {
+        return new LuxuryEngine();
+    }
+
+    @Override
+    public Seat createSeat() {
+        return new LuxurySeat();
+    }
+
+    @Override
+    public Tyre createTyre() {
+        return new LuxuryTyre();
+    }
+}
+class LowCarFactory implements CarFactory{
+
+    @Override
+    public Engine createEngine() {
+        return new Lowengine();
+    }
+
+    @Override
+    public Seat createSeat() {
+        return new LowSeat();
+    }
+
+    @Override
+    public Tyre createTyre() {
+        return new LowTyre();
+    }
+}
+package com.xgcd.abstactFactory;
+
+public class Clent {
+    public static void main(String[] args){
+        CarFactory factory=new LuxuryCarFactory();
+        Engine e=factory.createEngine();
+        e.run();
+        e.start();
+    }
+}
+>>>>简单工厂模式 虽然某种程度不符合设计原则，单实际应用最多，
+>>>>>工厂方法模式可以在不修改已有类的前提下，通过增加新的工厂类实现扩展
+>>>>>抽象工厂模式，不可以增加产品，但可以通过增加接口的方式增加产品族
+-----建造者模式，
+package com.bjsxt.builder;
+  
+/**
+ * 尚学堂牌宇宙飞船
+ * @author 尚学堂高淇 www.sxt.cn
+ *
+ */
+public class AirShip {
+private OrbitalModule orbitalModule;  //轨道舱
+private Engine engine; //发动机
+private EscapeTower escapeTower;  //逃逸塔
+ 
+public void launch(){
+System.out.println("发射！");
+}
+public OrbitalModule getOrbitalModule() {
+return orbitalModule;
+}
+public void setOrbitalModule(OrbitalModule orbitalModule) {
+this.orbitalModule = orbitalModule;
+}
+public Engine getEngine() {
+return engine;
+}
+public void setEngine(Engine engine) {
+this.engine = engine;
+}
+public EscapeTower getEscapeTower() {
+return escapeTower;
+}
+public void setEscapeTower(EscapeTower escapeTower) {
+this.escapeTower = escapeTower;
+}
+}
+  
+class OrbitalModule{
+private String name;
+  
+public OrbitalModule(String name) {
+this.name = name;
+}
+  
+public String getName() {
+return name;
+}
+  
+public void setName(String name) {
+this.name = name;
+}
+ 
+}
+  
+class Engine {
+private String name;
+public Engine(String name) {
+this.name = name;
+}
+public String getName() {
+return name;
+}
+public void setName(String name) {
+this.name = name;
+}
+}
+class EscapeTower{
+private String name;
+  
+public String getName() {
+return name;
+}
+  
+public void setName(String name) {
+this.name = name;
+}
+  
+public EscapeTower(String name) {
+super();
+this.name = name;
+}
+}
+  
+package com.bjsxt.builder;
+  
+  
+public interface AirShipBuilder {
+Engine builderEngine();
+OrbitalModule builderOrbitalModule();
+EscapeTower  builderEscapeTower();
+}
+  
+package com.bjsxt.builder;
+  
+public interface AirShipDirector {
+/**
+ * 组装飞船对象
+ * @return
+ */
+AirShip   directAirShip();
+}
+  
+package com.bjsxt.builder;
+  
+  
+public class SxtAirShipBuilder implements AirShipBuilder {
+//StringBuilder, 以后学习XML解析中，JDOM库中的类：DomBuilder,SaxBuilder
+@Override
+public Engine builderEngine() {
+System.out.println("构建尚学堂牌发动机！");
+return new Engine("尚学堂牌发动机！");
+}
+  
+@Override
+public EscapeTower builderEscapeTower() {
+ 
+System.out.println("构建逃逸塔");
+return new EscapeTower("尚学堂牌逃逸塔");
+}
+  
+@Override
+public OrbitalModule builderOrbitalModule() {
+System.out.println("构建轨道舱");
+return new OrbitalModule("尚学堂牌轨道舱");
+}
+ 
+}
+  
+package com.bjsxt.builder;
+  
+public class SxtAirshipDirector implements AirShipDirector {
+  
+private AirShipBuilder builder;
+  
+public SxtAirshipDirector(AirShipBuilder builder) {
+this.builder = builder;
+}
+@Override
+public AirShip directAirShip() {
+Engine e = builder.builderEngine();
+OrbitalModule o = builder.builderOrbitalModule();
+EscapeTower et = builder.builderEscapeTower();
+ 
+//装配成飞船对象
+AirShip ship = new AirShip();
+ship.setEngine(e);
+ship.setEscapeTower(et);
+ship.setOrbitalModule(o);
+ 
+return ship;
+}
+}
+
+------原型模式
+浅克隆
+package com.bjsxt.prototype;
+ 
+import java.io.Serializable;
+import java.util.Date;
+ 
+public class Sheep implements Cloneable,Serializable {   //1997,英国的克隆羊，多利！
+private String sname;
+private Date birthday;
+
+@Override
+protected Object clone() throws CloneNotSupportedException {
+Object obj = super.clone();  //直接调用object对象的clone()方法！
+return obj;
+}
+public String getSname() {
+return sname;
+}
+public void setSname(String sname) {
+this.sname = sname;
+}
+public Date getBirthday() {
+return birthday;
+}
+public void setBirthday(Date birthday) {
+this.birthday = birthday;
+}
+public Sheep(String sname, Date birthday) {
+super();
+this.sname = sname;
+this.birthday = birthday;
+}
+public Sheep() {
+}
+}
+ 
+package com.bjsxt.prototype;
+ 
+import java.util.Date;
+ 
+/**
+ * 测试原型模式(浅克隆)
+ * @author 尚学堂高淇 www.sxt.cn
+ *
+ */
+public class Client {
+public static void main(String[] args) throws Exception {
+Date date = new Date(12312321331L);
+Sheep s1 = new Sheep("少利",date);
+System.out.println(s1);
+System.out.println(s1.getSname());
+System.out.println(s1.getBirthday());
+
+date.setTime(23432432423L);
+
+System.out.println(s1.getBirthday());
+
+Sheep s2 = (Sheep) s1.clone();
+s2.setSname("多利");
+System.out.println(s2);
+System.out.println(s2.getSname());
+System.out.println(s2.getBirthday());  
+}
+}
+深克隆
+package com.bjsxt.prototype;
+ 
+import java.util.Date;
+ 
+ 
+//测试深复制
+public class Sheep2 implements Cloneable {   //1997,英国的克隆羊，多利！
+private String sname;
+private Date birthday;
+@Override
+protected Object clone() throws CloneNotSupportedException {
+Object obj = super.clone();  //直接调用object对象的clone()方法！  
+
+//添加如下代码实现深复制(deep Clone)
+Sheep2 s = (Sheep2) obj;
+s.birthday = (Date) this.birthday.clone();  //把属性也进行克隆！  
+return obj;
+}
+public String getSname() {
+return sname;
+}
+public void setSname(String sname) {
+this.sname = sname;
+}
+public Date getBirthday() {
+return birthday;
+}
+public void setBirthday(Date birthday) {
+this.birthday = birthday;
+}
+public Sheep2(String sname, Date birthday) {
+super();
+this.sname = sname;
+this.birthday = birthday;
+}
+public Sheep2() {
+}
+}
+测试：
+package com.bjsxt.prototype;
+ 
+import java.util.Date;
+ 
+/**
+ * 原型模式(深复制)
+ * @author 尚学堂高淇www.sxt.cn
+ *
+ */
+public class Client2 {
+public static void main(String[] args) throws CloneNotSupportedException {
+Date date = new Date(12312321331L);
+Sheep2 s1 = new Sheep2("少利",date);
+Sheep2 s2 = (Sheep2) s1.clone();   //实现深复制。s2对象的birthday是一个新对象！  
+
+System.out.println(s1);
+System.out.println(s1.getSname());
+System.out.println(s1.getBirthday());
+
+date.setTime(23432432423L);
+
+System.out.println(s1.getBirthday());  
+
+s2.setSname("多利");
+System.out.println(s2);
+System.out.println(s2.getSname());
+System.out.println(s2.getBirthday());  
+}
+}
+深克隆的另一种实现方式，序列化和反序列化实现身：
+package com.bjsxt.prototype;
+ 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Date;
+ 
+/**
+ * 原型模式(深复制,使用序列化和反序列化的方式实现深复制)
+ * @author 尚学堂高淇www.sxt.cn
+ *
+ */
+public class Client3 {
+public static void main(String[] args) throws CloneNotSupportedException, Exception {
+Date date = new Date(12312321331L);
+Sheep s1 = new Sheep("少利",date);
+System.out.println(s1);
+System.out.println(s1.getSname());
+System.out.println(s1.getBirthday());
+
+//  使用序列化和反序列化实现深复制
+ByteArrayOutputStream bos = new ByteArrayOutputStream();
+ObjectOutputStream    oos = new ObjectOutputStream(bos);
+oos.writeObject(s1);
+byte[] bytes = bos.toByteArray();
+
+ByteArrayInputStream  bis = new ByteArrayInputStream(bytes);
+ObjectInputStream   ois = new ObjectInputStream(bis);
+
+Sheep s2 = (Sheep) ois.readObject();   //克隆好的对象！
+
+System.out.println("修改原型对象的属性值");  
+date.setTime(23432432423L);
+
+System.out.println(s1.getBirthday());
+
+s2.setSname("多利");
+System.out.println(s2);
+System.out.println(s2.getSname());
+System.out.println(s2.getBirthday());  
+}
+}
+
+
+ 
+
+测试类
+package com.bjsxt.prototype;
+ 
+/**
+ * 测试普通new方式创建对象和clone方式创建对象的效率差异！
+ * 如果需要短时间创建大量对象，并且new的过程比较耗时。则可以考虑使用原型模式！
+ * @author 尚学堂高淇 www.sxt.cn
+ *
+ */
+public class Client4 {
+public static void testNew(int size){
+long start = System.currentTimeMillis();
+for(int i=0;i<size;i++){
+Laptop t = new Laptop();
+}
+long end = System.currentTimeMillis();
+System.out.println("new的方式创建耗时："+(end-start));
+}
+public static void testClone(int size) throws CloneNotSupportedException{
+long start = System.currentTimeMillis();
+Laptop t = new Laptop();
+for(int i=0;i<size;i++){
+Laptop temp = (Laptop) t.clone();
+}
+long end = System.currentTimeMillis();
+System.out.println("clone的方式创建耗时："+(end-start));
+}
+public static void main(String[] args) throws Exception {
+testNew(1000);
+testClone(1000);
+}
+}
+class Laptop implements Cloneable {  //笔记本电脑
+public Laptop() {
+try {
+Thread.sleep(10);  //模拟创建对象耗时的过程!
+} catch (InterruptedException e) {
+e.printStackTrace();
+}
+}
+@Override
+protected Object clone() throws CloneNotSupportedException {
+Object obj = super.clone();  //直接调用object对象的clone()方法！
+return obj;
+}
+}
+
+--------结构型模式
+
+-----适配器模式，
+package com.bjsxt.adapter;
+/**
+ * 被适配的类
+ * (相当于例子中的，PS/2键盘)
+ * @author Administrator
+ *
+ */
+public class Adaptee {
+public void request(){
+System.out.println("可以完成客户请求的需要的功能！");
+}
+}
+ 
+package com.bjsxt.adapter;
+ 
+/**
+ * 适配器 (类适配器方式)
+ * (相当于usb和ps/2的转接器)
+ */
+public class Adapter extends Adaptee implements Target {
+@Override
+public void handleReq() {
+super.request();
+}
+}
+ 
+package com.bjsxt.adapter;
+ 
+public interface Target {
+void handleReq();
+}
+ 
+package com.bjsxt.adapter;
+ 
+/**
+ * 客户端类
+ * (相当于例子中的笔记本，只有USB接口)
+ * @author Administrator
+ *
+ */
+public class Client {
+public void test1(Target t){
+t.handleReq();
+}
+public static void main(String[] args) {
+Client  c = new Client();
+
+Adaptee a = new Adaptee();
+
+//  Target t = new Adapter();
+ 
+Target t = new Adapter2(a);
+
+c.test1(t);  
+}
+}
+ 
+package com.bjsxt.adapter;
+ 
+/**
+ * 适配器 (对象适配器方式,使用了组合的方式跟被适配对象整合)
+ * (相当于usb和ps/2的转接器)
+ * @author Administrator
+ *
+ */
+public class Adapter2  implements Target {
+private Adaptee adaptee;
+@Override
+public void handleReq() {
+adaptee.request();
+}
+ 
+public Adapter2(Adaptee adaptee) {
+super();
+this.adaptee = adaptee;
+}
+}
+------------------桥接模式，
+package com.bjsxt.bridge;
+  
+/**
+ * 品牌
+ * @author Administrator
+ *
+ */
+public interface Brand {
+void sale();
+}
+  
+class Lenovo implements Brand {
+  
+@Override
+public void sale() {
+System.out.println("销售联想电脑");
+}
+ 
+}
+class Dell implements Brand {
+ 
+@Override
+public void sale() {
+System.out.println("销售Dell电脑");
+}
+ 
+}
+  
+class Shenzhou implements Brand {
+ 
+@Override
+public void sale() {
+System.out.println("销售神舟电脑");
+}
+ 
+}
+
+
+ 
+
+商品类
+  
+package com.bjsxt.bridge;
+  
+public interface Computer {
+void sale();
+}
+  
+class Desktop implements Computer {
+@Override
+public void sale() {
+System.out.println("销售台式机！");
+}
+}
+  
+class Laptop implements Computer {
+@Override
+public void sale() {
+System.out.println("销售笔记本！");
+}
+}
+class Pad implements Computer {
+@Override
+public void sale() {
+System.out.println("销售平板电脑！");
+}
+}
+  
+class LenovoDesktop extends Desktop {
+@Override
+public void sale() {
+System.out.println("销售联想台式机");
+}
+}
+class LenovoLaptop extends Laptop {
+@Override
+public void sale() {
+System.out.println("销售联想笔记本");
+}
+}
+class LenovoPad extends Pad {
+@Override
+public void sale() {
+System.out.println("销售联想平板电脑");
+}
+}
+class ShenzhouDesktop extends Desktop {
+@Override
+public void sale() {
+System.out.println("销售神舟台式机");
+}
+}
+class ShenzhouLaptop extends Laptop {
+@Override
+public void sale() {
+System.out.println("销售神舟笔记本");
+}
+}
+class ShenzhouPad extends Pad {
+@Override
+public void sale() {
+System.out.println("销售神舟平板电脑");
+}
+}
+  
+  
+class DellDesktop extends Desktop {
+@Override
+public void sale() {
+System.out.println("销售戴尔台式机");
+}
+}
+class DellLaptop extends Laptop {
+@Override
+public void sale() {
+System.out.println("销售戴尔笔记本");
+}
+}
+class DellPad extends Pad {
+@Override
+public void sale() {
+System.out.println("销售戴尔平板电脑");
+}
+}
+
+
+ 
+
+测试：
+  
+package com.bjsxt.bridge;
+  
+/**
+ * 电脑类型的维度
+ * @author Administrator
+ *
+ */
+public class Computer2 {
+ 
+protected Brand brand;
+ 
+public Computer2(Brand b) {
+this.brand = b;
+}
+public void sale(){
+brand.sale();
+}
+}
+class Desktop2 extends Computer2 {
+  
+public Desktop2(Brand b) {
+super(b);
+}
+ 
+@Override
+public void sale() {
+super.sale();
+System.out.println("销售台式机");
+}
+}
+  
+class Laptop2 extends Computer2 {
+ 
+public Laptop2(Brand b) {
+super(b);
+}
+ 
+@Override
+public void sale() {
+super.sale();
+System.out.println("销售笔记本");
+}
+}
+
+
+ 
+
+使用桥接模式后的测试代码如下：
+package com.bjsxt.bridge;
+  
+public class Client {
+public static void main(String[] args) {
+//销售联想的笔记本电脑
+Computer2  c = new Laptop2(new Lenovo());
+c.sale();  
+//销售神舟的台式机
+Computer2 c2 = new Desktop2(new Shenzhou());
+c2.sale();  
+}
+}
+-----------------装饰模式，------------
+-动态的为一个对象增加新的功能。
+ 
+
+    -装饰模式是一个用于代替继承的技术，无须通过继承增加子类就能扩展对象的新功能，使用对象的关联关系代替继承关系，更加灵活，同时避免类型体系的快速膨胀。
+	package com.bjsxt.decorator;
+/**
+ * 抽象构建
+ * @author 尚学堂高淇，www.sxt.cn
+ *
+ */
+public interface ICar {
+void move();
+}
+//ConcreteComponent 具体构件角色(真实对象)
+class Car implements ICar {
+@Override
+public void move() {
+System.out.println("陆地上跑！");
+}
+}
+//Decorator装饰角色
+class SuperCar implements ICar {
+protected ICar car;
+public SuperCar(ICar car) {
+super();
+this.car = car;
+}
+@Override
+public void move() {
+car.move();
+}
+}
+//ConcreteDecorator具体装饰角色
+class FlyCar extends SuperCar {
+  
+public FlyCar(ICar car) {
+super(car);
+}
+ 
+public void fly(){
+System.out.println("天上飞！");
+}
+  
+@Override
+public void move() {
+super.move();
+fly();
+}
+}
+//ConcreteDecorator具体装饰角色
+class WaterCar extends SuperCar {
+ 
+public WaterCar(ICar car) {
+super(car);
+}
+ 
+public void swim(){
+System.out.println("水上游！");
+}
+ 
+@Override
+public void move() {
+super.move();
+swim();
+}
+ 
+}
+//ConcreteDecorator具体装饰角色
+class AICar extends SuperCar {
+ 
+public AICar(ICar car) {
+super(car);
+}
+ 
+public void autoMove(){
+System.out.println("自动跑！");
+}
+ 
+@Override
+public void move() {
+super.move();
+autoMove();
+}
+}
+
+ 
+
+测试代码如下：
+package com.bjsxt.decorator;
+  
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+  
+public class Client {
+public static void main(String[] args) {
+Car car  = new Car();
+car.move();
+ 
+System.out.println("增加新的功能，飞行----------");
+FlyCar flycar = new FlyCar(car);
+flycar.move();
+ 
+System.out.println("增加新的功能，水里游---------");
+WaterCar  waterCar = new WaterCar(car);
+waterCar.move();
+ 
+System.out.println("增加两个新的功能，飞行，水里游-------");
+WaterCar waterCar2 = new WaterCar(new FlyCar(car));
+waterCar2.move();
+ 
+//  Reader r = new BufferedReader
+(new InputStreamReader(new FileInputStream(new File("d:/a.txt"))));
+ 
+}
+}
+----------------组合模式，
+应用场景：
+        -把部分和整体的关系用到树形结构来表示，从而使客户端可以使用统一的方式处理部分对象和整体对象。
+
+组合模式核心：
+        1）抽象构件（component）角色：定义了叶子和容器构件的共同点。
+
+        2）叶子（leaf）构件角色：无子节点
+
+        3）容器（composite）构件角色：有容器特征，可以包含子节点。
+
+ 
+package com.bjsxt.composite;
+ 
+/**
+ * 抽象组件
+ * @author Administrator
+ *
+ */
+public interface Component {
+void operation();
+}
+ 
+//叶子组件
+interface Leaf extends Component {
+}
+//容器组件
+interface Composite extends Component {
+void add(Component c);
+void remove(Component c);
+Component getChild(int index);
+}
+使用组合模式，模拟杀毒软件的架构设计！
+package com.bjsxt.composite;
+ 
+import java.util.ArrayList;
+import java.util.List;
+ 
+//抽象构建
+public interface AbstractFile {
+void killVirus();  //杀毒
+}
+ 
+ 
+class ImageFile implements AbstractFile {
+private String name;
+
+public ImageFile(String name) {
+super();
+this.name = name;
+}
+ 
+@Override
+public void killVirus() {
+System.out.println("---图像文件："+name+",进行查杀！");
+}
+
+}
+class TextFile implements AbstractFile {
+private String name;
+
+public TextFile(String name) {
+super();
+this.name = name;
+}
+
+@Override
+public void killVirus() {
+System.out.println("---文本文件："+name+",进行查杀！");
+}
+}
+class VideoFile implements AbstractFile {
+private String name;
+
+public VideoFile(String name) {
+super();
+this.name = name;
+}
+
+@Override
+public void killVirus() {
+System.out.println("---视频文件："+name+",进行查杀！");
+}
+}
+ 
+class Folder implements AbstractFile {
+private String name;
+//定义容器，用来存放本容器构建下的子节点
+private List<AbstractFile> list = new ArrayList<AbstractFile>();
+
+public Folder(String name) {
+super();
+this.name = name;
+}
+ 
+public void add(AbstractFile file){
+list.add(file);
+}
+public void remove(AbstractFile file){
+list.remove(file);
+}
+public AbstractFile getChild(int index){
+return list.get(index);
+}
+ 
+@Override
+public void killVirus() {
+System.out.println("---文件夹："+name+",进行查杀");
+
+for (AbstractFile file : list) {
+file.killVirus();
+}
+
+}
+
+}
+
+
+ 
+
+测试
+package com.bjsxt.composite;
+ 
+public class Client {
+public static void main(String[] args) {
+AbstractFile f2,f3,f4,f5;
+Folder f1 = new Folder("我的收藏");
+
+f2 = new ImageFile("老高的大头像.jpg");
+f3 = new TextFile("Hello.txt");
+f1.add(f2);
+f1.add(f3);
+
+Folder f11 = new Folder("电影");
+f4 = new VideoFile("笑傲江湖.avi");
+f5 = new VideoFile("神雕侠侣.avi");
+f11.add(f4);
+f11.add(f5);
+f1.add(f11);  
+//  f2.killVirus();
+
+f1.killVirus();  
+}
+}
+外观模式，享元模式 ，
+--------代理模式
+package com.bjsxt.proxy.staticProxy;
+ 
+public interface Star {
+/**
+ * 面谈
+ */
+void confer();
+/**
+ * 签合同
+ */
+void signContract();
+/**
+ * 订票
+ */
+void bookTicket();
+/**
+ * 唱歌
+ */
+void sing();
+/**
+ * 收钱
+ */
+void collectMoney();
+}
+
+
+ 
+
+代理
+ 
+
+package com.bjsxt.proxy.staticProxy;
+ 
+public class ProxyStar implements Star {
+
+private Star star;
+
+public ProxyStar(Star star) {
+super();
+this.star = star;
+}
+ 
+@Override
+public void bookTicket() {
+System.out.println("ProxyStar.bookTicket()");
+}
+ 
+@Override
+public void collectMoney() {
+System.out.println("ProxyStar.collectMoney()");
+}
+ 
+@Override
+public void confer() {
+System.out.println("ProxyStar.confer()");
+}
+ 
+@Override
+public void signContract() {
+System.out.println("ProxyStar.signContract()");
+}
+ 
+@Override
+public void sing() {
+star.sing();
+}
+ 
+}
+
+真实类
+ 
+package com.bjsxt.proxy.staticProxy;
+ 
+public class RealStar implements Star {
+ 
+@Override
+public void bookTicket() {
+System.out.println("RealStar.bookTicket()");
+}
+ 
+@Override
+public void collectMoney() {
+System.out.println("RealStar.collectMoney()");
+}
+ 
+@Override
+public void confer() {
+System.out.println("RealStar.confer()");
+}
+ 
+@Override
+public void signContract() {
+System.out.println("RealStar.signContract()");
+}
+ 
+@Override
+public void sing() {
+System.out.println("RealStar(周杰伦本人).sing()");
+}
+
+
+
+}
+
+
+ 
+
+测试类
+package com.bjsxt.proxy.staticProxy;
+ 
+public class Client {
+public static void main(String[] args) {
+Star real = new RealStar();
+Star proxy = new ProxyStar(real);
+
+proxy.confer();
+proxy.signContract();
+proxy.bookTicket();
+proxy.sing();
+
+proxy.collectMoney();
+
+}
+}
+行为模式：
+-----模板方法模式，命令模式，迭代

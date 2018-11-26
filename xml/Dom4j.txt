@@ -1,0 +1,82 @@
+以下是解析时使用DOM4J解析器文档使用的步骤。
+	导入XML相关的软件包。
+	创建一个SAXReader
+	从文件或数据流创建一个文档
+	通过调用document.selectNodes()获取使用XPath表达式所需的节点
+	提取根元素
+	遍历节点列表。
+	检查属性
+	检查子元素
+
+导入XML相关的软件包
+
+	import java.io.*;
+	import java.util.*;
+	import org.dom4j.*;
+创建一个DocumentBuilde
+	SAXBuilder saxBuilder = new SAXBuilder();
+从文件或数据流创建一个文档
+
+	File inputFile = new File("input.txt");
+	SAXBuilder saxBuilder = new SAXBuilder();
+	Document document = saxBuilder.build(inputFile);
+提取根元素
+	Element classElement = document.getRootElement();
+Examine attributes
+	//returns specific attributevalueOf("@attributeName");
+检查子元素
+	//returns first child nodeselectSingleNode("subelementName");
+演示示例
+这是输入需要解析xml文件：
+
+	<?xml version="1.0"?>
+	<class>
+	   <student rollno="393">
+		  <firstname>dinkar</firstname>
+		  <lastname>kad</lastname>
+		  <nickname>dinkar</nickname>
+		  <marks>85</marks>
+	   </student>
+	   <student rollno="493">
+		  <firstname>Vaneet</firstname>
+		  <lastname>Gupta</lastname>
+		  <nickname>vinni</nickname>
+		  <marks>95</marks>
+	   </student>
+	   <student rollno="593">
+		  <firstname>jasvir</firstname>
+		  <lastname>singn</lastname>
+		  <nickname>jazz</nickname>
+		  <marks>90</marks>
+	   </student>
+	</class>
+	 
+
+演示示例：
+   public static void main(String[] args) {
+      try {
+         File inputFile = new File("input.txt");
+         SAXReader reader = new SAXReader();
+         Document document = reader.read( inputFile );
+ 
+         System.out.println("Root element :" 
+            + document.getRootElement().getName());
+ 
+         Element classElement = document.getRootElement();
+ 
+         List<Node> nodes = document.selectNodes("/class/student" );
+         System.out.println("----------------------------");
+         for (Node node : nodes) {
+            System.out.println("\nCurrent Element :" 
+               + node.getName());
+            System.out.println("Student roll no : " 
+               + node.valueOf("@rollno") );
+            System.out.println("First Name : " + node.selectSingleNode("firstname").getText());
+            System.out.println("Last Name : " + node.selectSingleNode("lastname").getText());
+            System.out.println("First Name : " + node.selectSingleNode("nickname").getText());
+            System.out.println("Marks : " + node.selectSingleNode("marks").getText());
+         }
+      } catch (DocumentException e) {
+         e.printStackTrace();
+      }
+   }

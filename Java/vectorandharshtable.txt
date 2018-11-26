@@ -1,0 +1,125 @@
+Vector类 
+	  类似于一个数组，但是与数组相比在使用上有以下俩个优点：
+		使用时无需声明上限，随着元素的增加，Vector的长度会自动增加。
+		Vector提供额外的方法来增加，删除元素，比数组操作高效。
+	三个构造函数：
+		public Vector();//创建一个空的Vector
+		public Vector(int initialCapacity);//创建一个初始长度为initialCapacity的vector。
+		public Vector(int initialCapacity,int capacityIncrement);
+		//创建一个初始长度为initialCapacity的vector，当向量需要增长时，增加capacityIncrement个元素。
+	添加、删除对象的方法如下：
+		public void add(int index,Object element);
+		//在index位置添加对象element
+		public boolean add(Object o)
+		//在vector的末尾添加对象O
+		public Object remove(int index)
+		//删除index位置的对象，后面的对象一次前提。
+	vector类中访问、修改对象的方法如下：
+		public Object get(int index)
+		//返回index位置的对象
+		public Object set(int index,Object element)
+		//修改index位置的对象为element.
+	其他方法
+		public String toString()
+		//将元素转换成字符串
+		public int size()
+		//返回对象长度
+Hashtable类  存储的是对象的名-值对，将对象的名和他的值相关联同时存储，并且可以根据对象名来提取他的值。
+         一个名只能对应一个键值，一个键值可以对应多个名。
+	构造函数
+			public Hashtable();//构建散列表
+			public Hashtable(int initialCapacity)
+			//构建初始空间为initialCapacity的散列表
+			public int size()
+			//返回散列表名的个数
+			public Object remove(Object key)
+			//删除散列表里key名及对应的value值
+			public Object put(Object key,Object value)
+			//将对象名和值为value存放到散列表中。
+			public Object get(Object key)
+			//返回散列表key名对应的值
+			public String toString()
+			//转换成字符串
+Enumeration 接口
+		实现Enumeration接口的对象生成一系列元素，通过nextElement()方法一次读取下一个元素。
+			public boolean hasMoreElements()
+			//测试是否还有元素
+			public Object nextElement()
+			//返回枚举的下一个元素。
+	该接口通常与Vector 、Hashtable一起连用。用来枚举vector的项和Hashtable中的键名例如
+			for(Enumeration e=v.elements();e.hasMoreElements();)
+					System.out.println(e.nextElement());
+Date 类 用来指导日期和时间，其构造函数及常用方法如下：
+	    public Date()//从当前时间构造日期时间对象。
+		public String toString()//转换成字符串
+		public long getTime()//返回自新世纪以来的毫秒数，可以用于计算时间
+String类 用于操作非数值型字符串，它提供了七类方法操作，创建，长度，比较，检索，截取，运算和转换
+	字符串创建
+		public String()//构建一个空字符串
+		public String(char[] value)//使用字符数组value中的字符以构造一个字符串
+		public String(String original)
+		//使用原字符串original的拷贝以构造一个新的字符串。
+	字符串长度
+		public int length()
+		//返回字符串长度
+	字符串比较
+		public Boolean equals(Object anObject)
+		//比较字符串是否与anObject代表的字符串相同（区分大小写）
+		public boolean equalsIgnore(String anotherString)
+		//比较字符串是否与anotherString代表的字符串相同（不区分大小写）
+	字符串检索
+		public int indexOf(String str)
+		//返回一个字符串中str第一次出现所在的位置
+		public int indexOf(String str,int fromIndex)
+		//返回从fromindex开始字符串str出现所在的位置。
+	字符串截取
+		public String subString(int beginIndex,int endIndex)
+		//返回beginIndex到endIndex之间的字符串
+	字符串计算
+		运算符为“+”表示连接运算。
+	数据类型转换：
+		valueOf()系列的静态方法用于从其他对象转换成字符串
+		public static String valueOf(boolean b);
+		//其中boolean 可以替换为 int char long  double float等
+	  从String转换到int float long double 
+		int i =Integer.parseInt(intstr);//intstr="10";
+		float f=Float.parseFloat(fltstr);
+	  从String转换到byte short
+		byte b=Byte.parseByte(str);
+		short sh=Short.parseShort(str);
+	  从String转换到char
+	    char a = str.charAt(0);
+	  从string转换到Boolean
+		boolean flag=Boolean.valueOf(str);//str="true";
+StringBuffer类 提供了一个字符串的可变序列，类似于String类，但他对存储的字符序列可以任意修改，使用起来比String灵活
+	构造函数
+		StringBuffer()//构造一个空的stringbuffer对象，初始容量为16个字符
+		StringBuffer(String str)
+		//构造一个StringBuffer对象，初始内容为字符串str的拷贝
+		对于Stringbuffer类，除了string 类中常用的像长度、字符截取、字符串检索的方法可用之外，
+		还有俩个较为方便的方法，即append和insert
+	append方法系列根据参数类型在StringBuffer对象的末尾直接进行数据添加。
+		public StringBuffer append(boolean b)
+		//char / char[] /char [] str，int offset,int len/double d/float f/
+		//int /long/Object/String /StringBuffer
+	insert方法系列根据参数的数据类型在StringBuffer的offset位置进行数据插入
+		public StringBuffer insert(int offset,boolean b)
+		//可加入对象与append类似
+	可以用 public String toString()将Stringbuffer对象转换成字符串。
+StringTokenizer类 是一个实现Enumeration接口的类，使得应用程序可以将字符串分成多个记号，
+		默认以空格为分隔符，用户也可以指定分隔符。分隔符为false ，分割字符串；为true,则将分隔符自身作为
+		分割后的字符串的一部分。
+	构造函数：
+		StringTokenizer(String str);
+		//以字符串str构建StringTokenizer对象
+		StrIngTokenizer(String str,String delim)
+		//使用delim分隔符，以初始字符串str创建StringTokenizer对象，
+		int countTokens()
+		//返回识别的总标记数
+		boolean hasMoreTokens()
+		//测试是否还有识别的记号
+		boolean nexToken(String delim)
+		//返回字符串delim分割的下一个记号
+		//String nextToken()
+		//返回下一个识别的记号。
+		

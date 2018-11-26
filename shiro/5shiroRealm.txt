@@ -1,0 +1,254 @@
+在shiro.ini配置中把用户名和密码配置死了，实际开发中用户名和密码存放在数据库中。
+	shiro默认使用自带的iniRealm,iniRealm从配置文件读取用户信息，大部分情况下，
+	需要从系统的数据库中读取用户信息，所以需要自定义realm
+		创建类UserRealm继承AuthenticationRealm
+			重写俩个方法
+			
+			配置.ini
+			#配置userRealm
+			[main]
+			myrealm=com.cheng.realm.UserRealm
+			#这个可以不用配置，因为默认的SecurityManager就是DefaultSecurityManager
+			SecurityManager=org.apache.shiro.mgt.DefaultSecurityManager
+			#配置SecurityManager里面的realm
+			SecurityManager.realms=$myrealm
+			
+			 public String getRealm(){
+				 return this.getClass().getSimpleName();
+			 }
+					 /**
+		  * 认证要调用的方法
+		   * @param authenticationToken：就是subject.login(token)
+		  * @return
+		  * @throws AuthenticationException
+		  */
+		 @Override
+		protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+        //获得用户名
+         String username=authenticationToken.getPrincipal().toString();
+         //String password=authenticationToken.getCredentials().toString();
+         //userMapper.queryUserByUserName(username);
+         //假设从数据库里查出来的数据
+         if(!username.equals("admin")){
+              throw  new UnknownAccountException("用户名不存在");
+         }
+         //String dbUsername="admin";
+         String dbPwd="123456";
+         //获取认证信息
+       /***
+        * 参数1:principal 用户名【身份】
+        * 参数2：Credentials [密码]数据库中的密码
+        * 参数3：realmName realm的名字
+        */
+        AuthenticationInfo info=new SimpleAuthenticationInfo(username,dbPwd,getRealm());
+       /***
+        * 参数1:principal 用户名【身份】
+        * 参数2：Credentials [密码]数据库中加密后的密码
+        * 参数3：混淆的字符串
+        * 参数4：realmName realm的名字
+        */
+        //AuthenticationInfo info1=new SimpleAuthenticationInfo(a,b,c,d);
+         return info;
+        }
+
+散列算法+凭证配置
+	配置.ini
+	#配置userRealm
+	[main]
+	#定义凭证匹配器
+	credentialsMatcher=org.apache.shiro.authc.credential.HashedCredentialsMatcher
+	#散列算法
+	credentialsMatcher.hashAlgorithmName=md5
+	#散列次数
+	credentialsMatcher.hashIterations=1;
+	#创建自定义realm
+	myrealm=com.cheng.realm.UserRealm
+	#将凭证管理器配置进去
+	myrealm.credentialsMatcher=$credentialsMatcher
+	#这个可以不用配置，因为默认的SecurityManager就是DefaultSecurityManager
+	SecurityManager=org.apache.shiro.mgt.DefaultSecurityManager
+	#配置SecurityManager里面的realm
+	SecurityManager.realms=$myrealm
+授权
+	相关方法说明：
+		subject.hasRole("");是否有角色
+		subject.hasRoles(list);分别判断用户是否具有List中每个内容
+		subject.hasAllRoles(Collection);返回Boolean要求参数中所有角色用户都必须具有
+		subjec.isPermitted("")判断是否有权限
+		
+自定义Realm
+	配置.ini文件
+	配置.ini
+	#配置userRealm
+	[main]
+	#定义凭证匹配器
+	credentialsMatcher=org.apache.shiro.authc.credential.HashedCredentialsMatcher
+	#散列算法
+	credentialsMatcher.hashAlgorithmName=md5
+	#散列次数
+	credentialsMatcher.hashIterations=1;
+	#创建自定义realm
+	myrealm=com.cheng.realm.UserRealm2
+	#将凭证管理器配置进去
+	myrealm.credentialsMatcher=$credentialsMatcher
+	#这个可以不用配置，因为默认的SecurityManager就是DefaultSecurityManager
+	SecurityManager=org.apache.shiro.mgt.DefaultSecurityManager
+	#配置SecurityManager里面的realm
+	SecurityManager.realms=$myrealm
+	创建自己的UserRealm2
+	
+			 public String getRealm(){
+				 return this.getClass().getSimpleName();
+			 }
+			/**
+		  * 多次调用，没查询一次用户角色和权限都有调用一次
+		  * @param principalCollection
+		  * @return
+		  */
+		 @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+          SimpleAuthorizationInfo info =new SimpleAuthorizationInfo();
+          System.out.println("doGetAuthorizationInfo: "+principalCollection.getPrimaryPrincipal());
+          ActiveUser activeUser=(ActiveUser)principalCollection.getPrimaryPrincipal();
+          System.out.println(activeUser.getUser().getName());
+          info.addRoles(activeUser.getRoles());
+          info.addStringPermissions(activeUser.getPermission());
+         return info;
+        }
+
+		 /**
+		  * 认证要调用的方法
+		   * @param authenticationToken：就是subject.login(token)
+		  * @return
+		  * @throws AuthenticationException
+		  */
+		 @Override
+     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+        //获得用户名
+         String username=authenticationToken.getPrincipal().toString();
+         //模拟从数据库里从登录名去查询信息
+          User user=new User(1,"张三","admin","e10adc3949ba59abbe56e057f20f883e");
+         //String password=authenticationToken.getCredentials().toString();
+  //         //userMapper.queryUserByUserName(username);
+  //         //假设从数据库里查出来的数据
+         if(user==null){
+              throw  new UnknownAccountException("用户名不存在");
+         }else{
+             //查询用户角色信息
+           List<String> roles=new ArrayList<String>();
+           roles.add("role1");
+           roles.add("role2");
+              //查询用户权限
+           List<String> permissions=new ArrayList<String>();
+           permissions.add("user:view");
+           permissions.add("user:create");
+          ActiveUser activeUser=new ActiveUser(user,roles,permissions);
+          /***
+           * 参数1:principal 用户名【身份】
+           * 参数2：Credentials [密码]数据库中的密码
+           * 参数3：realmName realm的名字
+           */
+          AuthenticationInfo info=new SimpleAuthenticationInfo(activeUser,user.getPassword(),getRealm());
+          return info;
+         }
+       /***
+        * 参数1:principal 用户名【身份】
+        * 参数2：Credentials [密码]数据库中加密后的密码
+        * 参数3：混淆的字符串
+        * 参数4：realmName realm的名字
+        */
+        //AuthenticationInfo info1=new SimpleAuthenticationInfo(a,b,c,d);
+        }
+		自定义Shiro realm开发写法
+		因为doGetAuthorizationinfo在调用subject.hasXXX的方法时会被调用，
+		所有查询数据库的方法不推荐写在其中，
+		因为认证doGetAuthenticationinfo只会执行一次，所以要认证时，可以根据用户id
+		把用户角色和权限全部查询出来，把user roles permissions打爆传给授权方法
+		创建user
+		public class User {
+   private Integer id;
+   private String name;
+   private String loginname;
+   private String password;
+
+    public void setId(Integer id) {
+     this.id = id;
+    }
+
+    public void setName(String name) {
+     this.name = name;
+    }
+
+    public void setLoginname(String loginname) {
+     this.loginname = loginname;
+    }
+
+    public void setPassword(String password) {
+     this.password = password;
+    }
+
+    public Integer getId() {
+     return id;
+    }
+
+    public String getName() {
+     return name;
+    }
+
+    public String getLoginname() {
+     return loginname;
+    }
+
+    public String getPassword() {
+     return password;
+    }
+
+    public User() {
+    }
+
+    public User(Integer id, String name, String loginname, String password) {
+     this.id = id;
+     this.name = name;
+     this.loginname = loginname;
+     this.password = password;
+    }
+}
+ 创建ActiveUser
+ public class ActiveUser {
+    private User user;
+    private List<String> roles=new ArrayList<String>();
+    private List<String> permission=new ArrayList<String>();
+
+        public void setUser(User user) {
+         this.user = user;
+        }
+
+        public void setRoles(List<String> roles) {
+         this.roles = roles;
+        }
+
+        public void setPermission(List<String> permission) {
+         this.permission = permission;
+        }
+
+        public User getUser() {
+         return user;
+        }
+
+        public List<String> getRoles() {
+         return roles;
+        }
+
+        public List<String> getPermission() {
+         return permission;
+        }
+
+        public ActiveUser() {
+        }
+
+     public ActiveUser(User user, List<String> roles, List<String> permission) {
+      this.user = user;
+      this.roles = roles;
+      this.permission = permission;
+     }
+}

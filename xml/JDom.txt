@@ -1,0 +1,244 @@
+当一个JDOM 解析器分析XML文档，可以灵活地得到一个树形结构，其中包含所有文档的元素，而不会影响应用程序的内存占
+用。JDOM提供了多种可用于检查的情况下的文件的文档的内容和结构的实用功能是良好的结构，其结构是公知的。
+JDOM使Java开发灵活性和XML解析代码易于维护。它是量轻级，快速API。
+JDOM定义了几个Java类。以下是最常见的类：
+		Document - 表示整个XML文档。文档Document对象是通常被称为DOM树。
+		Element - 表示一个XML元素。 Element对象有方法来操作其子元素，它的文本，属性和名称空间。
+		Attribute 表示元素的属性。属性有方法来获取和设置属性的值。它有家长和属性类型。
+		Text 表示XML标记的文本。
+		Common 表示一个XML文档中的注释。
+使用JDOM，还有会经常用到的几种方法：
+		SAXBuilder.build(xmlSource)() - 构建XML源的JDOM文档。
+		Document.getRootElement() - 得到XML的根元素。
+		Element.getName() - 获取XML节点的名称。
+		Element.getChildren() - 得到一个元素的所有直接子节点。
+		Node.getChildren(Name) - 获得具有给定名称的直接子节点。
+		Node.getChild(Name) - 获取使用给定名称的第一个孩子节点。
+导入XML相关的软件包
+		import java.io.*;
+		import java.util.*;
+		import org.jdom2.*;		
+创建DocumentBuilder
+		SAXBuilder saxBuilder = new SAXBuilder();
+从文件或流创建一个文档
+		File inputFile = new File("input.txt");
+		SAXBuilder saxBuilder = new SAXBuilder();
+		Document document = saxBuilder.build(inputFile);
+提取根元素
+		Element classElement = document.getRootElement();
+检查属性
+		//returns specific attribute
+		getAttribute("attributeName");
+检查子元素
+		//returns a list of subelements of specified name
+		getChildren("subelementName"); 
+		//returns a list of all child nodes
+		getChildren(); 
+		//returns first child node
+		getChild("subelementName");
+	实例一  .xml
+		<?xml version="1.0"?>
+		<class>
+		   <student rollno="393">
+			  <firstname>dinkar</firstname>
+			  <lastname>kad</lastname>
+			  <nickname>dinkar</nickname>
+			  <marks>85</marks>
+		   </student>
+		   <student rollno="493">
+			  <firstname>Vaneet</firstname>
+			  <lastname>Gupta</lastname>
+			  <nickname>vinni</nickname>
+			  <marks>95</marks>
+		   </student>
+		   <student rollno="593">
+			  <firstname>jasvir</firstname>
+			  <lastname>singn</lastname>
+			  <nickname>jazz</nickname>
+			  <marks>90</marks>
+		   </student>
+		</class>
+	解析
+			 public static void main(String[] args) {
+			  try {
+			  //	从文件或流创建一个文档
+				 File inputFile = new File("input.txt");
+				//创建DocumentBuilder
+				 SAXBuilder saxBuilder = new SAXBuilder();		 
+				 Document document = saxBuilder.build(inputFile);
+				//提取根元素
+				 System.out.println("Root element :" 
+					+ document.getRootElement().getName());	
+						
+				 Element classElement = document.getRootElement();		 
+				 List<Element> studentList = classElement.getChildren();
+				 System.out.println("----------------------------");		 
+				 for (int temp = 0; temp < studentList.size(); temp++) {    
+					Element student = studentList.get(temp);
+					System.out.println("\nCurrent Element :" 
+					   + student.getName());
+					Attribute attribute =  student.getAttribute("rollno");
+					System.out.println("Student roll no : " 
+					   + attribute.getValue() );
+					System.out.println("First Name : " + student.getChild("firstname").getText());
+					System.out.println("Last Name : "+ student.getChild("lastname").getText());
+					System.out.println("Nick Name : "+ student.getChild("nickname").getText());
+					System.out.println("Marks : "+ student.getChild("marks").getText());                    
+				 }
+			  }catch(JDOMException e){
+				 e.printStackTrace();
+			  }catch(IOException ioe){
+				 ioe.printStackTrace();
+			  }
+   }
+   实例二 .xml
+   <?xml version="1.0"?>
+		<cars>
+			<supercars company="Ferrari">
+				<carname type="formula one">Ferarri 101</carname>
+				<carname type="sports car">Ferarri 201</carname>
+				<carname type="sports car">Ferarri 301</carname>
+			</supercars>
+			<supercars company="Lamborgini">
+				<carname>Lamborgini 001</carname>
+				<carname>Lamborgini 002</carname>
+				<carname>Lamborgini 003</carname>
+			</supercars>
+			<luxurycars company="Benteley">
+				<carname>Benteley 1</carname>
+				<carname>Benteley 2</carname>
+				<carname>Benteley 3</carname>
+			</luxurycars>
+		</cars>
+	解析
+	public static void main(String[] args) {
+      try {
+         File inputFile = new File("input.txt");
+         SAXBuilder saxBuilder = new SAXBuilder();
+         Document document = saxBuilder.build(inputFile);
+         System.out.println("Root element :" 
+            + document.getRootElement().getName());
+         Element classElement = document.getRootElement();
+         List<Element> supercarList = classElement.getChildren("supercars");
+         System.out.println("----------------------------");
+         for (int temp = 0; temp < supercarList.size(); temp++) {    
+            Element supercarElement = supercarList.get(temp);
+            System.out.println("\nCurrent Element :"+ supercarElement.getName());
+            Attribute attribute =  supercarElement.getAttribute("company");
+            System.out.println("company : "+ attribute.getValue() );
+			
+            List<Element> carNameList = supercarElement.getChildren("carname");
+            for (int count = 0;count < carNameList.size(); count++) {  
+               Element carElement = carNameList.get(count);
+               System.out.print("car name : ");
+               System.out.println(carElement.getText());
+               System.out.print("car type : ");
+               Attribute typeAttribute = carElement.getAttribute("type");
+               if(typeAttribute !=null)
+                  System.out.println(typeAttribute.getValue());
+               else{
+                  System.out.println("");
+               }
+            }               
+         }
+      }catch(JDOMException e){
+         e.printStackTrace();
+      }catch(IOException ioe){
+         ioe.printStackTrace();
+      }
+   }
+   创建.xml
+			<?xml version="1.0" encoding="UTF-8"?>
+			<cars>
+			  <supercars company="Ferrari">
+				<carname type="formula one">Ferrari 101</carname>
+				<carname type="sports">Ferrari 202</carname>
+			  </supercars>
+			</cars>
+	创建程序
+			public static void main(String[] args) {
+      try{
+         //root element
+         Element carsElement = new Element("cars");
+         Document doc = new Document(carsElement);        
+ 
+         //supercars element
+         Element supercarElement = new Element("supercars");
+         supercarElement.setAttribute(new Attribute("company","Ferrari"));
+ 
+         //supercars element
+         Element carElement1 = new Element("carname");
+         carElement1.setAttribute(new Attribute("type","formula one"));
+         carElement1.setText("Ferrari 101");
+         Element carElement2 = new Element("carname");
+         carElement2.setAttribute(new Attribute("type","sports"));
+         carElement2.setText("Ferrari 202");
+         supercarElement.addContent(carElement1);
+         supercarElement.addContent(carElement2);
+         doc.getRootElement().addContent(supercarElement);
+         XMLOutputter xmlOutput = new XMLOutputter();
+         // display ml
+         xmlOutput.setFormat(Format.getPrettyFormat());
+         xmlOutput.output(doc, System.out); 
+      }catch(IOException e){
+         e.printStackTrace();
+      }      
+   }
+   
+   修改实例 .xml
+   <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+		<cars>
+		   <supercars company="Ferrari">
+			  <carname type="formula one">Ferrari 101</carname>
+			  <carname type="sports">Ferrari 202</carname>
+		   </supercars>
+		   <luxurycars company="Benteley">
+			  <carname>Benteley 1</carname>
+			  <carname>Benteley 2</carname>
+			  <carname>Benteley 3</carname>
+		   </luxurycars>
+		</cars>
+	修改代码
+			public static void main(String[] args) {
+      try {
+         File inputFile = new File("input.txt");
+         SAXBuilder saxBuilder = new SAXBuilder();
+         Document document = saxBuilder.build(inputFile);
+         Element rootElement = document.getRootElement();
+         //get first supercar
+         Element supercarElement = rootElement.getChild("supercars");
+         // update supercar attribute
+         Attribute attribute = supercarElement.getAttribute("company");
+         attribute.setValue("Lamborigini");
+ 
+         // loop the supercar child node
+         List<Element> list = supercarElement.getChildren();
+         for (int temp = 0; temp < list.size(); temp++) {
+            Element carElement = list.get(temp);
+            if("Ferrari 101".equals(carElement.getText())){
+               carElement.setText("Lamborigini 001");
+            }
+            if("Ferrari 202".equals(carElement.getText())){
+               carElement.setText("Lamborigini 002");
+            }
+         }
+ 
+         //get all supercars element
+         List<Element> supercarslist = rootElement.getChildren();
+         for (int temp = 0; temp < supercarslist.size(); temp++) {
+            Element tempElement = supercarslist.get(temp);
+            if("luxurycars".equals(tempElement.getName())){
+               rootElement.removeContent(tempElement);
+            }            
+         }
+		//输出及显示
+         XMLOutputter xmlOutput = new XMLOutputter();
+         // display xml
+         xmlOutput.setFormat(Format.getPrettyFormat());
+         xmlOutput.output(document, System.out); 
+      } catch (JDOMException e) {
+         e.printStackTrace();
+      } catch (IOException e) {
+         e.printStackTrace();
+      }
+   }

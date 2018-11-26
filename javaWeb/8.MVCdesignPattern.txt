@@ -1,0 +1,39 @@
+MVC设计模式 把代码位置具体化
+M：model 模型  负责各个功能 用JavaBean 实现
+V:view  视图 负责页面展示 表单表单 以及与用户交互
+	使用HTML/js/css/jquery等前端技术实现
+C:controller  控制器 分发器模型		接收请求，将请求跳转到模型处理，模型处理完毕后，在将处理结构转发给请求处。
+	使用jsp(不推荐)推荐使用servlet实现控制器
+请求流程：	视图发送一个请求后，controller选择对应的模型进行处理，使用特定的模型进行数据处理，返回处理结果给控制器，
+			响应成功选择界面进行显示。
+Servlet要想使用必须配置版本不同配置也不同
+			Servlet2.5:web.xml
+			servlet3.0 @WebServlet
+	web.xml中的：/:代表项目根路径
+		http://localhost:8080/
+		jsp中的/:服务器根路径
+	构建路径和web都是根目录。
+MVC案例: 登录
+	view 视图层 登录页login.jsp 
+	controller控制器，LoginController登录控制器
+	Model 模型层 封装逻辑模型--功能  封装数据的模型---实体类
+三层架构
+	与mvc设计模式的目标一致，都是为了解耦合、提高代码复用；
+	区别：二者对项目理解的角度不同。
+2.三层组成：表示层 USL user show layer  视图层
+				jsp js html css jquery等web前端技术 代码位置在web
+				后台 对用于mvc的controller，用控制跳转和调用业务逻辑层
+			业务逻辑层 BLL business logic layer  service层
+				接收表示层的请求，调用
+				组装数据访问层，逻辑性的操作（增删查改 删：查加删）
+				一般位于 xxx.service包中
+			数据库访问层  DAL Data access layer 
+				直接访问数据库的操作，原子性的操作（增删查改）
+三层间的关系 ：上层将请求传递给下层，下层出来后返回给上层。
+		必须把mysql-connector-java-5.1.7-bin.jar导入到tomcat的lib目录下面！ 
+			在java项目中，只需要引入mysql-connector-java-5.1.7-bin.jar就可以运行java项目。
+			在web项目中，当Class.forName("om.mysql.jdbc.Driver");时myeclipse是不会去查找字符串，
+			不会去查找驱动的,需要把mysql-connector-java-5.1.7-bin.jar拷贝到tomcat下lib目录。			
+	
+	
+			

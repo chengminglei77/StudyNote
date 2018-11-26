@@ -1,0 +1,127 @@
+使用shiro+springmvc+shiro.ini完成用户登录和授权
+	创建项目 导入spring+springmvc的包 shiro 
+	<暂缺>
+	创建springmvc.xml
+	<暂缺>
+	配置web.xml
+	<暂缺>
+	创建shiro.ini完成用户登录和授
+	[users]
+	 zhangsan=123456
+	 lisi=123
+	 [roles]
+	 role1=user:add,user:view
+	 role2=user:delete
+	 [urls]
+	 
+	 创建user类
+	 public classuser{
+		private Integer id;
+		private String name;
+		private String address;
+		//增加常规赋值取值构造函数
+		public  int getId(){
+			return this.id;
+		}
+		
+	 }
+	创建DataGridVIew()
+	public class DataGridView{
+		private Long total;
+		private List<?> rows;
+		public DataGridView(){
+	
+		}
+		public DataGridView(Long total,List<?>rows){
+		 super();
+		 this.total=total;
+		 this.rows=rows;
+		}
+		//常规赋值和获取操作
+	}
+	创建UserController
+	@Controller
+	@RequestMapping("user")
+	public class UserController{
+		/***
+		*用户登录
+		*/
+		@RequestMapping("login")
+		public String login(String username,String password,HttpSession session,Model model){
+				 //1.加载主配置文件user.ini，手动导入SecurityManager 因为java.lang中也有同名的
+          Factory<SecurityManager> factory=new IniSecurityManagerFactory("classpath:user.ini");
+          //2.创建securityManager
+          SecurityManager securityManager=factory.getInstance();
+          //3.将securityManager绑定到环境中
+          SecurityUtils.setSecurityManager(securityManager);
+          //4.创建一个主体，里面存放用户名，和密码
+          Subject subject=SecurityUtils.getSubject();
+          //5.在token里面存放用户名和密码
+          AuthenticationToken token=new UsernamePasswordToken(username,password);
+          //6.使用主体去调用shiro里面的realm去认证
+
+          try{
+               subject.login(token);
+               System.out.println("登录成功");
+			   return "list.jsp";
+          }catch (IncorrectCredentialsException e){
+               System.out.println("密码不正确 ");
+			   model.addAttribute("error","密码不正确");
+               e.printStackTrace();
+          }catch (UnknownAccountException e){
+               System.out.println("用户不存在");
+			   model.addAttribute("error",“用户名不正确”)
+          }
+		  return "index.jsp";
+		}
+		
+		/***
+		*加载用户列表
+		*/
+		@RequestMapping("loadAllUsers")
+		@ResponseBody
+		public DataGridView loadAllUsers(){
+				DataGridView dataGridView =new DataGridView();
+				List<User> users= new ArrayList<User>();
+				for(int i=0;i<10;i++){
+					users.add(new User(i,"zhangsan","吴汉"));
+				}
+				dataGridView.setTotal(Long.valueOf(users.size()));
+				dataGridView.setRows(users);
+		}
+	
+	
+	}
+	
+	新建index.jsp
+		//将title 修改为用户登录
+		<body>
+			<h1 align="cneter">用户登录</h1>
+			<hr>
+			<form action="user/login.action" method="post"></form>
+				<table border="1" align="center" width="50%" cellpadding="5">
+					<tr>
+					<td width="30%" align="right"> 用户名: </td>
+					<td> <input type="text" name="username"></td>
+					</tr>
+					<tr>
+					<td width="30%" align="right"> 密码: </td>
+					<td> <input type="text" name="password"></td>
+					</tr>
+					<tr>
+					
+					  <td align="center"> <input type="submit" value="提交"></td>
+					</tr>
+				</table>	
+			</form>
+		</body>
+		
+	创建list.jsp
+		<title>用户列表</title>
+		
+		<h1 align="center"> 用户列表</h1>
+		
+	
+	登录页面，可以输入用户名和密码，输入成功后调用userController中的login
+	方法，在该方法中调用shiro验证，是否存在，再调用log.jsp页面，shiro可以精确到按钮。
+	

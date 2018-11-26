@@ -1,0 +1,83 @@
+Error和Exception的区别：
+我开着车走在路上，一头猪冲在路中间，我刹车。这叫一个异常。
+我开着车在路上，发动机坏了，我停车，这叫错误。系统处于不可恢复的崩溃状态。发动机什么时候坏？我们普通司机能管吗？不能。发动机什么时候坏是汽车厂发动机制造商的事。
+Exception :
+		>>>Runtime Exception（unchecked Exception）
+			出现RuntimeException就一定是你的问题，可以不捕获，因为小心点这些异常是可以避免的。
+		----可能出现异常
+		1.ArithmeticException 如试图除以0
+		2.NullPointerException当程序访问一个空对象的成员变量或方法，访问一个空数
+		  组的成员时发生。怎么处理？ 
+		3.ClassCastException，是指类转换异常，一个类是数字类，而由于误操作，错误的将数字类向数字类转换改写成了数字类向字符串类的转换，从而产生了异常。
+				--强制转换时发生了这个异常。在java中经常会出现类转换异常，出现了这个异常就需要耐心处理，
+		4.ArrayIndexOutOfBoundsException访问的元素下表超过数组长度
+		5.NumberFormatException数字格式异常!
+	>>>	Checked Exception: 
+			所有不是Runtime Exception的异常，统称为Checked Exception，又被称为“已检查异常”。这类异常的产生不是程序本身的问题，通常由外界因素造成的。为了预防这些异常产生时，造成程序的中断或得到不正确的结果，Java要求编写可能产生这类异常的程序代码时，一定要去做异常的处理。
+			1.要打开的文件不存在
+			编译器将检查是否为所有已检查异常提供异常处理。
+			这一类异常，我们必须捕获进行处理。
+>>>>>>>>try块
+		try语句指定了一段代码，该段代码就是一次捕获并处理的范围。在执行过程中，当任意一条语句产生异常时，就会跳过该段中后面的代码。代码中可能会产生并抛出一种或几种类型的异常对象，它后面的catch语句要分别对这些异常做相应的处理
+			一个try语句必须带有至少一个catch语句块或一个finally语句块 。。
+			注：当异常处理的代码执行结束以后，是不会回到try语句去执行尚未执行的代码。
+		catch
+			a)每个try语句块可以伴随一个或多个catch语句，用于处理可能产生的不同类型的异常对象。
+			b)常用方法
+			toString ( )方法，显示异常的类名和产生异常的原因
+			getMessage( )方法，只显示产生异常的原因，但不显示类名。
+			printStackTrace( )方法，用来跟踪异常事件发生时堆栈的内容。
+			这些方法均继承自Throwable类 
+			c)Catch捕获异常时的捕获顺序：  
+				i.如果异常类之间有继承关系，在顺序安排上需注意。越是顶层的类，越放在下面。再不然就直接把多余的catch省略掉。 
+		finally
+			有些语句，不管是否发生了异常，都必须要执行，那么就可以把这样的语句放到finally语句块中。
+			通常在finally中关闭程序块已打开的资源，比如：文件流、释放数据库连接等。			
+		throws
+			如果一个方法中可能产生某种异常，但是并不能确定如何处理这种异常，则应根据异常规范在方法的首部声明该方法可能抛出的异常。
+			如果一个方法抛出多个已检查异常，就必须在方法的首部列出所有的异常，之间以逗号隔开。
+			--注意点：
+			方法重写中声明异常原则 
+				子类声明的异常范围不能超过父类声明的范围。包含如下意思：
+				1.父类没有声明异常，子类也不能；
+				2.不可抛出原有方法抛出异常类的父类或上层类 
+				3.抛出的异常类型的数目不可以比原有的方法抛出的还多（不是指个数）
+自定义异常
+		从Exception类或者它的子类派生一个子类即可 ，习惯上，定义的类应该包含2个构造器：一个是默认的构造器，另一个是带有详细信息的构造器
+			class  IllegalAgeException   extends   Exception {
+			public IllegalAgeException() {
+			}
+			public IllegalAgeException(String  msg) {
+			  super(msg);
+			}
+			}
+			  
+			class Person {
+			private String name;
+			private int age;
+			public void setName(String name) {
+			this.name = name;
+			}
+			public void setAge(int age) {
+			if (age < 0)
+			throw new IllegalAgeException("人的年龄不应该为负数");
+			this.age = age;
+			}
+			public String toString() {
+			return "name is " + name + " and age is " + age;
+			}
+			}
+			 public class MyExceptionTest {
+			 
+			public static void main(String[] args) {
+			Person p = new Person();
+			try {
+			p.setName("Lincoln");
+			p.setAge(-1);
+			} catch (IllegalAgeException e) {
+			e.printStackTrace();
+			System.exit(-1);
+			}
+			System.out.println(p);
+			}
+			}

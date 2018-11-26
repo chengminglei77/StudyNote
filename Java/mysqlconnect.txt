@@ -1,0 +1,487 @@
+JDBC概念： java Database Connection ,表示数据库连接（任何数据库都支持jdbc连接），
+是一个独立于特定数据库管理系统，通过的sql数据库存取和操作的公共接口，
+他是Java中专门提供的一组用于操作数据库的标准，所有的数据库商如果想要为java
+提供支持，则必须支持此标准。
+2.常用操作类/接口
+Connection接口， Statement接口，PreapredStatement接口，ResultSet接口，CallableStatement接口，DriverManager类
+
+package com.cheng.mysql;
+
+import java.sql.*;
+
+/**
+ * 步骤如下：
+ * 1、加载数据库驱动程序：Class.forName(驱动程序类)；
+ * 2、通过用户名密码和连接地址url获取数据库连接对象：Connection connnction = DriverManager.getConnection(连接地址url,用户名,密码)。每个数据库都有指定的url，同一格式如下：jdbc:mysql://ip地址:端口号/数据库名字。
+ * 3、构造插入的SQL语句。注：在Java程序当中，SQL语句是以字符串的形式使用，程序不认识此SQL语句，传到数据库后让数据库来识别。
+ * 4、创建Statement实例：Statement stmt = connction.createStatement()。Statement是用来发送SQL语句的载体，因为Java代码无法解析，要交给数据库来解析。
+ * 5、执行插入SQL语句：stmt.executeUpdate(sql)。这里的执行是发送SQL语句。返回值为int类型，表示有多少条记录被更新了。
+ * 6、关闭连接：stmt.close()、 connnction.close()。关闭是为了释放资源。
+ */
+public class MySQLDemo {
+    // JDBC 驱动名及数据库 URL
+    static final String DB_URL = "jdbc:mysql://localhost:3306/emp?useUnicode=true&characterEncoding=utf-8&useSSL" +
+            "=false";
+
+    // 数据库的用户名与密码，需要根据自己的设置
+    static final String USER = "root";
+    static final String PASS = "conan2007";
+
+    public static void main(String[] args) {
+        printSql();
+        insert2();
+        printSql();
+    }
+    public static void printSql(){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+            // 注册 JDBC 驱动
+            Class.forName("com.mysql.jdbc.Driver");
+
+            // 打开链接
+            System.out.println("连接数据库...");
+            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+
+            // 执行查询
+            System.out.println(" 实例化Statement对象...");
+            stmt = conn.createStatement();
+            String sql= "SELECT id, name, url FROM websites order by id ASC";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            // 展开结果集数据库
+            while(rs.next()){
+                // 通过字段检索
+                int id  = rs.getInt("id");
+                String name = rs.getString("name");
+                String url = rs.getString("url");
+
+                // 输出数据
+                System.out.print("ID: " + id);
+                System.out.print(", 站点名称: " + name);
+                System.out.println(", 站点 URL: " + url);
+            }
+            // 完成后关闭
+            rs.close();
+            stmt.close();
+            conn.close();
+        }catch(SQLException se){
+            // 处理 JDBC 错误
+            se.printStackTrace();
+        }catch(Exception e){
+            // 处理 Class.forName 错误
+            e.printStackTrace();
+        }finally{
+            // 关闭资源
+            try{
+                if(stmt!=null) stmt.close();
+            }catch(SQLException se2){
+            }// 什么都不做
+            try{
+                if(conn!=null) conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }
+        }
+        System.out.println("Goodbye!");
+    }
+    public static void insertSql(){
+        try {
+            /**加载数据库驱动程序*/
+            Class.forName("com.mysql.jdbc.Driver");
+            /**获取数据库连接*/
+            Connection conn=DriverManager.getConnection(DB_URL,USER,PASS);
+            /**构造sql语句（插入具体数据）*/
+            String sql="INSERT INTO websites(id,name,url,alexa,country)VALUES(6,'百度','https://www.baidu.com','100'," +
+                    "'China') ";
+            /** 构建Statement实例（用来发送sql语句）*/
+            Statement state = conn.createStatement();
+            /** 执行SQL语句（其实是向数据库中发送sql语句）*/
+            state.executeUpdate(sql);
+            /**关闭连接(释放资源)*/
+             state.close();
+             conn.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    //方法：插入数据(代码优化)
+    public static void insert2(){
+               String name = "Google";
+               int id  = 6;
+               String url = "https://www.google.cm/";
+               int alexa =10;
+               String country="America";
+                try {
+                       Class.forName("com.mysql.jdbc.Driver");
+                       Connection connection  = DriverManager.getConnection(DB_URL, USER, PASS);
+                    //拼接SQL语句
+                      String sql = "INSERT INTO websites(id,name,url,alexa,country)" +
+                              "VALUE('"+id+"','"+name+"','"+url+"','"+alexa+"','"+country+"')";
+                     Statement state = connection.createStatement();
+                      state.executeUpdate(sql);
+                      state.close();
+                     connection.close();
+                     System.out.println("success.");
+                 } catch (ClassNotFoundException e) {
+                       e.printStackTrace();
+                    } catch (SQLException e) {
+                       e.printStackTrace();
+                     }
+         }
+    public static  void deleteSql(){
+
+        try {
+            /**加载驱动程序*/
+            Class.forName("com.mysql.jdbc.Driver");
+            /**建立数据库连接*/
+            Connection conn=DriverManager.getConnection(DB_URL,USER,PASS);
+            /**构造数据库查询语句*/
+            String sql="delete from websites where id =1";
+            /**构建Statement实例，发送sql语句*/
+            Statement state = conn.createStatement();
+            /** 执行sql语句*/
+            state.executeUpdate(sql);
+            /**关闭连接*/
+            state.close();
+            conn.close();
+            System.out.println("delete success");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void updateSql(){
+
+        try {
+            /**加载驱动程序*/
+            Class.forName("com.mysql.jdbc.Driver");
+            /**建立连接*/
+            Connection conn=DriverManager.getConnection(DB_URL,USER,PASS);
+            /**构建数据库更新语句*/
+            String sql="update websites set id =1 where id =6";
+            /**构建Statement实例*/
+            Statement state=conn.createStatement();
+            /** 执行sql语句*/
+            state.executeUpdate(sql);
+            /**关闭连接*/
+            state.close();
+            conn.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+/////////////////////
+	ResultSet类是一种数据库查询结果存储类，就是当查询数据库的时候，可以将查询的结果放在具体的ResultSet对象中，
+	其实我们把这种存储查询结果的ResultSet对象叫做ResultSet结果集。比如我们用aaa表示一个ResultSet对象。
+	那么查询的结果无非就是一些符合查询条件的记录集，ResultSet结果集有一个索引指针，最初这个指针是
+	指向第一条记录的前一个位置，也就是没有指向任何内容，使用aaa.next()方法就会使指针往后移动指向下一个记录，
+	所以一定要先执行一次next()函数才会让指针指向第一条记录。一条记录可能会有好几个属性的内容，那么我们可以使用
+	getXXX(int index)方法类获得具体属性的值，XXX代表
+	以什么样的数据类型方式来读取内容，当指针指向一条记录的时候，比如这条记录的内容就是：0001   张三   3岁。
+	而且这三个属性的值的类型全是String类型，那么我们可以使用aaa.getString(1)来获得内容0001，使用getString(2)
+	来获得内容张三，值得注意：ResultSet的一条记录的索引位置是从1开始的，而不是从0开始。
+  ResultSet接口常用方法：
+	boolean next()//遍历时，判断是否有下一个结果
+	int getInt(String columnLabel)
+	int getInt(int columnIndex)
+	Date getDate(String columnLabel)
+	Date getDate(int columnIndex)
+	String getString(int columnIndex)
+	String getString(String columnLabel)
+ResultSet接口实现查询操作：
+	1、加载数据库驱动程序：Class.forName(驱动程序类)
+	2、通过用户名密码和连接地址获取数据库连接对象：DriverManager.getConnection(连接地址,用户名,密码)
+	3、构造查询SQL语句
+	4、创建Statement实例：Statement stmt = conn.createStatement()
+	5、执行查询SQL语句，并返回结果：ResultSet rs = stmt.executeQuery(sql)
+	6、处理结果
+	7、关闭连接：rs.close()、stmt.close()、conn.close()	
+	
+	package com.cheng.mysql;
+
+import com.cheng.first.Websites;
+
+import java.sql.*;
+
+/**
+ * 使用PreparedStatement重构增删改查（推荐）
+ * 概念：表示预编译的SQL语句的对象。SQL语句被预编译并存储在PreparedStatement对象中。然后可以使用此对象多次高效地执行该语句。PreparedStatement是Statement的一个接口。
+ * 作用：灵活处理sql语句中的变量。
+ */
+public class MySQLDemo2 {
+    // JDBC 驱动名及数据库 URL
+    static final String DB_URL = "jdbc:mysql://localhost:3306/emp?useUnicode=true&characterEncoding=utf-8&useSSL" +
+            "=false";
+
+    // 数据库的用户名与密码，需要根据自己的设置
+    static final String USER = "root";
+    static final String PASS = "conan2007";
+
+    public static void main(String[] args) {
+        printSql();
+        Websites ws=new Websites(2,"360","https://360.com",100,"China");
+       // update(ws);
+       // delete(2);
+        System.out.println("name:"+findById(3).getName()+" url"+findById(3).getUrl());
+        printSql();
+    }
+    public static void printSql(){
+        Connection conn = null;
+        Statement stmt = null;
+        try{
+            // 注册 JDBC 驱动
+            // Class.forName("com.mysql.jdbc.Driver");
+
+            // 打开链接
+            System.out.println("连接数据库...");
+            conn = DriverManager.getConnection(DB_URL,USER,PASS);
+
+            // 执行查询
+            System.out.println(" 实例化Statement对象...");
+            stmt = conn.createStatement();
+            String sql= "SELECT id, name, url FROM websites order by id ASC";
+            ResultSet rs = stmt.executeQuery(sql);
+
+            // 展开结果集数据库
+            while(rs.next()){
+                // 通过字段检索
+                int id  = rs.getInt("id");
+                String name = rs.getString("name");
+                String url = rs.getString("url");
+
+                // 输出数据
+                System.out.print("ID: " + id);
+                System.out.print(", 站点名称: " + name);
+                System.out.println(", 站点 URL: " + url);
+            }
+            // 完成后关闭
+            rs.close();
+            stmt.close();
+            conn.close();
+        }catch(SQLException se){
+            // 处理 JDBC 错误
+            se.printStackTrace();
+        }catch(Exception e){
+            // 处理 Class.forName 错误
+            e.printStackTrace();
+        }finally{
+            // 关闭资源
+            try{
+                if(stmt!=null) stmt.close();
+            }catch(SQLException se2){
+            }// 什么都不做
+            try{
+                if(conn!=null) conn.close();
+            }catch(SQLException se){
+                se.printStackTrace();
+            }
+        }
+        System.out.println("Goodbye!");
+    }
+    public static void insert(Websites ws){
+
+        try {
+            /**加载驱动*/
+            Class.forName("com.mysql.jdbc.Driver");
+            /**建立数据库连接*/
+            Connection conn=DriverManager.getConnection(DB_URL,USER,PASS);
+            /**构造数据库插入语句*/
+            String sql="INSERT INTO websites(id,name,url,alexa,country)VALUES(?,?,?,?,?)";
+            /**创建PreparedStatement实例*/
+            PreparedStatement ps=conn.prepareStatement(sql);
+            ps.setInt(1,ws.getId());
+            ps.setString(2,ws.getName());
+            ps.setString(3,ws.getUrl());
+            ps.setInt(4,ws.getAlexa());
+            ps.setString(5,ws.getCountry());
+            /**执行数据库语句*/
+            ps.executeUpdate();
+            /**关闭连接*/
+            ps.close();
+            conn.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void update(Websites ws){
+        /**加载驱动*/
+        try {
+            /**建立数据库连接*/
+            Connection conn=DriverManager.getConnection(DB_URL,USER,PASS);
+            /**构造数据库插入语句*/
+            String sql="update websites set name=?,url=?,alexa=?,country=? where id=?";
+            /**创建PreparedStatement实例*/
+            PreparedStatement ps=conn.prepareStatement(sql);
+            ps.setString(1,ws.getName());
+            ps.setString(2,ws.getUrl());
+            ps.setInt(3,ws.getAlexa());
+            ps.setString(4,ws.getCountry());
+            ps.setInt(5,ws.getId());
+            /**执行数据库语句*/
+            ps.executeUpdate();
+            /**关闭连接*/
+            ps.close();
+            conn.close();
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    //方法：使用PreparedStatement删除数据
+    public static void delete(int id){
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            String sql = "delete from websites where id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            //设置占位符对应的值
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    // 使用PreparedStatement查询数据
+    public static Websites findById(int id){
+        Websites ws = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(DB_URL, USER, PASS);
+            String sql = "select name,url,alexa,country from websites where id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            //设置占位符对应的值
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()){
+                ws = new Websites();
+                ws.setId(id);
+                ws.setName(rs.getString(1));
+                ws.setUrl(rs.getString(2));
+                ws.setAlexa(rs.getInt(3));
+                ws.setCountry(rs.getString(4));
+                //把 java.sql.Date 与 java.util.Date之间的转换
+//                java.util.Date date = rs.getDate(4);
+//                ps.setDate(4, new java.sql.Date(date.getTime()));
+
+            }
+            rs.close();
+            ps.close();
+            conn.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return ws;
+    }
+}
+jdbc事物处理，事物的概念即，所有的操作要么同时成功，要么同时失败。在Mysql中提供了commit Rollback 命令进行事务的
+	提交和回滚。
+处理事务的步骤：
+	1、要取消掉JDBC的自动提交：void setAutoCommit(boolean autoCommit)
+	2、执行各个SQL语句，加入到批处理之中
+	3、如果所有语句执行成功，则提交事务 commit()；如果出现了错误，则回滚：rollback()
+		conn.setAutoCommit(false); // 取消自动提交
+		把SQL语句加入批处理
+		stmt.addBatch(…) ()
+		stmt.addBatch(…)
+		//执行批处理操作
+		stmt.executeBatch();
+		conn.commit(); // 提交事务
+		//如果发生错误
+		conn.rollback();
+package com.cheng.mysql;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+public class JDBCtest {
+
+
+    //数据库连接地址
+    public final static String URL = "jdbc:mysql://localhost:3306/emp?useUnicode=true&characterEncoding=utf-8&useSSL" +
+            "=false";
+    //用户名
+    public final static String USERNAME = "root";
+    //密码
+    public final static String PASSWORD = "conan2007";
+    //驱动类
+    public final static String DRIVER = "com.mysql.jdbc.Driver";
+
+
+    public static void main(String[] args) {
+        // TODO Auto-generated method stub
+        insertAndQuery();
+    }
+
+
+    //方法：使用PreparedStatement插入数据、更新数据
+    public static void insertAndQuery(){
+        Connection conn = null;
+        try {
+            Class.forName(DRIVER);
+            conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+            /**增加 设置为手动提交事务*/
+			conn.setAutoCommit(false);
+			
+			String sql1 = "insert into user(name,pwd)values(?,?)";
+            String sql2 = "update user set pwd=? where name=?";
+            PreparedStatement ps = conn.prepareStatement(sql1);
+            ps.setString(1, "smyhvae2");
+            ps.setString(2, "007");
+            ps.executeUpdate();
+
+            ps = conn.prepareStatement(sql2);
+            ps.setString(1, "008");
+            ps.setString(2, "smyh");
+            ps.executeUpdate();
+			/**增加 如果所有Sql语句成功，则提交事务*/
+			conn.commit();
+            ps.close();
+            conn.close();
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+			/**增加 只要有一个sql语句出现错误，则事务回滚*/
+			try{
+					conn.rollback();
+        }catch(SQLException el){
+			el.printStackTrace();
+		}
+		
+    }
+}
+////////////////////////////
+封装JDBC工具类
+
+之前的JDBC代码分析：
+
+我们可以先回顾一下上一篇博文中的第五段：使用PreparedStatement重构增删改查。
+
+通过分析可以发现有以下不足：有许多重复的代码、每次都要加载驱动、获取连接等。增删改查无非只是slq语句不一样而已。
+
+封装工具类就是一个抽象的过程，我们可以把现在代码中非常公用的代码抽取出来，形成一个工具类。
+
+第一步：抽象公共的代码到工具类。
+第二步：为提高可以连接不同数据库的能力，将连接数据库的URL、用户名，密码等信息编写在一个属性文件（jdbc.properties）中，方便以后进行修改。 		
+案例见：E:\java\TestJava\src\com\cheng\affairs

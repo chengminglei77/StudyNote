@@ -1,0 +1,254 @@
+shiro认证过程
+	1.创建SecurityManager
+	2.主体提交认证-->SecurityManager认证--->Authenticator认证-->Realm验证
+	
+	在.pom中添加
+		<!--第一步-->
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+            <version>1.2.1</version>
+            <scope>system</scope>
+            <systemPath>E:/Package/shiro/shiro-core-1.2.1.jar
+            </systemPath>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>RELEASE</version>
+
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+    </dependencies>
+	
+	2.创建测试类
+		public class AuthenticationTest {
+         SimpleAccountRealm simpleAccountRealm=new SimpleAccountRealm();   //指定Realm
+         @Before
+         public void addUser(){
+             simpleAccountRealm.addAccount("Mark","123456");//添加用户
+             simpleAccountRealm.addAccount("cheng","chengminglei","admin");//增加角色
+			 simpleAccountRealm.addAccount("cheng","chengminglei","admin"，"user");//多个角色 
+         }
+        @Test
+        public void testAuthentication() {
+               /**1.构建SecurityManager环境*/
+               DefaultSecurityManager defaultSecurityManager=new DefaultSecurityManager();//创建Security对象
+               defaultSecurityManager.setRealm(simpleAccountRealm);//把用户加载到环境中
+              /**2.主体提交认证请求*/
+              SecurityUtils.setSecurityManager(defaultSecurityManager);//设置SecurityManager主体环境            
+			  Subject subject=SecurityUtils.getSubject(); //获取主体
+              UsernamePasswordToken token=new UsernamePasswordToken("cheng","chengminglei");
+              subject.login(token);
+			  /**未授权登录显示异常*/
+              System.out.println("是否认证:"+subject.isAuthenticated());
+              /**退出登录后授权状态为false;
+			  subject.logout();//退出登录
+              System.out.println("是否认证:"+subject.isAuthenticated());*/
+			  subject.checkRole("admin");//函数类型为空
+			  subject.checkRoles("admin","user");//可验证多个角色种类
+        }
+	 }
+shiro 授权
+		1.创建SecurityManager
+		2.主体授权-->SecurityManagers授权-->Authorizer授权--->Realm获取用户信息
+		代码见上例
+		
+Shiro自定义Realm
+	内置Realm
+		iniRealm
+			.ini文件中：	
+				[users]：定义用户名和密码
+					username=pwd，role1,role,....//用户名=密码,角色1,角色2,......
+				[roles]
+					role1=operator1,operator2.....//角色权限可操作那些功能
+				# =======================
+				# Shiro INI 配置
+				# =======================
+				[main]:定义全局变量
+				# 对象和它们的属性在这里定义
+				# 例如 SecurityManager, Realms 等。
+				[users]
+				# 用户在这里定义，如果只是一小部分用户。（实际使用中，使用这种配置显然不合适）
+				[roles]
+				# 角色在这里定义，（实际应用中也不会在这里定义角色，一般都是存储于数据库中）
+				[urls]定义那些内置urls生效，在web应用中使用
+				#url地址=内置filter或自定义filter
+				#访问时出现/login的url必须去认证，支持authc对应的filter
+				/login=authc
+				#任意的url都不需要进行认证等功能
+				/** =anon
+				#所有的内容必须保证用户已登录
+				/**=user
+				#url abc 访问时必须保证用户具有role1和role2角色
+				/abc=roles["role1,role2"]
+				# web系统中，基于url的权限配置，web章节会介绍。
+			public class IniRealmTest {
+
+     @Test
+     public void testImiRealm() {
+          IniRealm iniRealm=new IniRealm("classpath:user.ini");
+          /**1.构建SecurityManager环境*/
+           DefaultSecurityManager defaultSecurityManager=new DefaultSecurityManager();
+           defaultSecurityManager.setRealm(iniRealm);
+           /**2.主体提交认证请求*/
+           SecurityUtils.setSecurityManager(defaultSecurityManager);//设置主体环境
+           Subject subject=SecurityUtils.getSubject(); //获取主体
+           UsernamePasswordToken token=new UsernamePasswordToken("cheng","chengminglei");
+
+           subject.login(token);
+           System.out.println("是否认证:"+subject.isAuthenticated());
+           subject.checkRole("admin");
+           subject.checkPermission("user:delete");
+     }
+	}
+		
+		jdbcRealm
+		增加依赖
+		 <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>system</scope>
+            <systemPath>E:/Package/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46-bin.jar
+            </systemPath>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+		测试 前需要创建 users(username,password)表 user_roles(username,role_name) 表role_permission(role_name,permission)
+		使用同字段建表无需再执行sql语句，若使用不同字段建表，需要自行调用sql语句。
+		public class JdbcRealmTest {
+       DruidDataSource dataSource=new DruidDataSource();
+
+       {
+         //设置数据库信息
+         dataSource.setUrl("jdbc:mysql://localhost:3306/emp?useUnicode=true&characterEncoding=utf-8&useSSL =false");
+         dataSource.setUsername("root");
+         dataSource.setPassword("conan2007");
+       }
+       @Test
+       public void testImiRealm() {
+
+         JdbcRealm jdbcRealm=new JdbcRealm();
+         jdbcRealm.setDataSource(dataSource);
+         jdbcRealm.setPermissionsLookupEnabled(true);
+
+         //使用自己的mySql表
+        String sql="select password from user where username=?";
+        jdbcRealm.setAuthenticationQuery(sql);
+
+         /**1.构建SecurityManager环境*/
+         DefaultSecurityManager defaultSecurityManager=new DefaultSecurityManager();
+         defaultSecurityManager.setRealm(jdbcRealm);
+         /**2.主体提交认证请求*/
+         SecurityUtils.setSecurityManager(defaultSecurityManager);//设置主体环境
+         Subject subject=SecurityUtils.getSubject(); //获取主体
+         UsernamePasswordToken token=new UsernamePasswordToken("ming","chengminglei");
+
+         subject.login(token);
+         System.out.println("是否认证:"+subject.isAuthenticated());
+//         subject.checkRole("admin");
+//         subject.checkPermission("user:delete");
+     }
+}
+	自定义realm
+		/**新建%%%%Realm类继承AuthorizingRealm*/
+		public class customerRealm  extends AuthorizingRealm {
+           Map<String,String> userMap=new HashMap<String, String>(16);
+               {
+                userMap.put("cheng","chengminglei");
+				//如果使用加密机制，需要将密码转换成加密后的密码
+				/*
+					 //未加盐
+                   Md5Hash md5Hash=new Md5Hash("chengminglei");
+                   //加盐
+                   Md5Hash md5Hash1=new Md5Hash("conan2007","conan");
+                   System.out.println(md5Hash1.toString());
+				*/
+                userMap.put("ming","chengminglei");
+                userMap.put("lei","chengminglei");
+                super.setName("customerRealm");//设置realm名
+               }
+           @Override
+		   /**获取角色和权限信息*/
+            protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
+                //从数据中或者缓存认证信息中获取用户
+                String username=(String)principalCollection.getPrimaryPrincipal();
+                Set<String> roles=getRolesByUsername(username);
+                Set<String > permission = getPermissionByUsername(username);
+                SimpleAuthorizationInfo simpleAuthorizationInfo=new SimpleAuthorizationInfo();
+                simpleAuthorizationInfo.setStringPermissions(permission);
+                simpleAuthorizationInfo.setRoles(roles);
+                      return simpleAuthorizationInfo;
+                 }
+             //模拟数据库或者缓存中获取数据
+             private Set<String> getPermissionByUsername(String username) {
+                Set<String> permission=new HashSet<String>();
+                permission.add("user:delete");
+                permission.add("user：update");
+                return  permission;
+             }
+
+            //模拟数据库中或者缓存中获取数据
+             private Set<String> getRolesByUsername(String username) {
+                Set<String> sets=new HashSet<String>();
+                sets.add("admin");
+                sets.add("user");
+                return sets;
+             }
+
+			@Override
+			/**获取认证名*/
+            protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken authenticationToken) throws AuthenticationException {
+                   /**从主体传过来的认证信息中，获取用户名*/
+                       String username=(String)authenticationToken.getPrincipal();
+                       /**2.通过用户名到数据库中获取凭证*/
+                       String password=getPasswordByUserName(username);
+                       if(password==null){
+                          return null;
+                       }
+                        SimpleAuthenticationInfo simpleAuthenticationInfo =new SimpleAuthenticationInfo("cheng",
+                       password,"customerRealm");
+                       return simpleAuthenticationInfo;
+                 }
+                 //模拟数据库查询凭证
+                 private String getPasswordByUserName(String username) {
+                //根据用户名返回密码
+                     return userMap.get(username);
+                 }
+		}
+shiro加密
+		shiro散列配置
+			HashedCredentialsMather
+			自定义Realm中使用散列
+			盐的使用
+			  @Test
+		   public void testCustomerRealm() {
+           customerRealm customer=new customerRealm();
+           /**1.构建SecurityManager环境*/
+           DefaultSecurityManager defaultSecurityManager=new DefaultSecurityManager();
+           defaultSecurityManager.setRealm(customer);
+           /**增加加密*/
+           HashedCredentialsMatcher matcher=new HashedCredentialsMatcher();
+           matcher.setHashAlgorithmName("md5");//选择加密算法名
+           matcher.setHashIterations(1);//设置加密次数
+
+           customer.setCredentialsMatcher(matcher);//在realm中设置加密对象
+
+           /**2.主体提交认证请求*/
+           SecurityUtils.setSecurityManager(defaultSecurityManager);//设置主体环境
+           Subject subject=SecurityUtils.getSubject(); //获取主体
+           UsernamePasswordToken token=new UsernamePasswordToken("cheng","conan2007");
+           subject.login(token);
+           System.out.println("是否认证:"+subject.isAuthenticated());
+        /*   subject.checkRole("admin");
+           subject.checkPermission("user:delete");*/
+      }
+			https://www.bilibili.com/video/av29315848/?p=3		

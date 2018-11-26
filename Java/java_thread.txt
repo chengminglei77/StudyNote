@@ -1,0 +1,478 @@
+//////////////线程/////////////////////////
+package com.sxxgcd.Thread;
+
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
+/**
+ * 模拟龟兔赛跑
+ * 1.创建多线程 继承Thread +重写run(线程体)
+ * 2.使用线程 创建子类对象+对象.start（）线程启动
+ */
+public class Rabbit extends Thread{
+    @Override
+    public void run(){
+        //线程体
+        try {
+            System.setOut(new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream("E:\\java\\ThreaClass\\src\\File\\print.txt")
+            ),true));
+            for(int i = 0; i<100; i++){
+                System.out.println("兔子跑了"+i+"步");
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void main(String[] args) throws FileNotFoundException {
+        Rabbit rab=new Rabbit();
+        Tortoise tor=new Tortoise();
+        //调用start方法
+        rab.start();
+        tor.start();
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream("E:\\java\\ThreaClass\\src\\File\\print.txt")
+        ),true));
+        for(int i=0;i<100;i++){
+            System.out.println("main=====>"+i);
+        }
+    }
+}
+class Tortoise extends Thread{
+    @Override
+    public void run(){
+        //线程体
+        try {
+            System.setOut(new PrintStream(new BufferedOutputStream(
+                    new FileOutputStream("E:\\java\\ThreaClass\\src\\File\\print.txt")
+            ),true));
+            for(int i = 0; i<100; i++){
+                System.out.println("乌龟跑了"+i+"步");
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+/////////////////////代理模式/////////////////////////////////
+package com.sxxgcd.Thread;
+
+/**
+ * 静态代理 设计模式
+ * 1.真实角色
+ * 2.代理角色 持有真实角色的引用
+ * 3.二者 实现相同的接口
+ */
+public class StaticProxy {
+    public static void main(String[] args){
+        //创建真实角色
+        Marry you=new You();
+        //创建代理角色+真实角色的引用
+        WeddingCompany company=new WeddingCompany(you);
+        //执行任务
+        company.marry();
+    }
+}
+//接口
+interface Marry{
+    public abstract void marry();
+}
+//真实角色
+class You implements Marry{
+    @Override
+    public void marry(){
+        System.out.println("you and 嫦娥结婚....");
+    }
+}
+//代理角色
+class WeddingCompany implements Marry{
+    private Marry you;
+    public WeddingCompany(){
+
+    }
+    public WeddingCompany(Marry you){
+        this.you=you;
+    }
+    private void before(){
+        System.out.println("布置猪窝.....");;
+    }
+    private void after(){
+        System.out.println("闹玉兔.....");
+    }
+    public void marry(){
+        before();
+        you.marry();
+        after();
+    }
+}
+////////////////使用Runnable创建线程////////////////////////
+package com.sxxgcd.Thread;
+
+public class Web12306 implements Runnable {
+    private int num=20;
+    @Override
+    public void run(){
+        while(true){
+            if(num<=0){
+                break;//跳出循环
+            }
+            System.out.println(Thread.currentThread().getName()+"抢到了"+num--);
+        }
+    }
+    public static void main(String[] args){
+        //真实角色
+        Web12306 web=new Web12306();
+        //代理
+        Thread t1=new Thread(web,"路人甲");
+        Thread t2=new Thread(web,"黄牛已");
+        Thread t3=new Thread(web,"攻城师");
+        //启动线程
+        t1.start();
+        t2.start();
+        t3.start();
+    }
+}
+//////////////Callable创建线程////////////////////////////
+package com.sxxgcd.Thread;
+
+import java.util.concurrent.*;
+
+//使用Callable创建线程
+public class Call {
+    public static void main(String []args) throws InterruptedException, ExecutionException {
+        //创建线程
+        ExecutorService ser = Executors.newFixedThreadPool(2);
+        Race tortoise =new Race("老不死的",1000);
+        Race rabbit = new Race("小兔子",500);
+        //获取值
+        Future<Integer> result1=ser.submit(tortoise);
+        Future<Integer> result2=ser.submit(rabbit);
+        Thread.sleep(1001);//2秒
+        tortoise.setFlag(false);
+        rabbit.setFlag(false);
+        int num1=result1.get();
+        int num2=result2.get();
+        System.out.println("乌龟跑了"+num1+"步");
+        System.out.println("小兔子跑了"+num2+"步");
+        //停止服务
+        ser.shutdown();
+    }
+}
+class Race implements Callable<Integer>{
+    private String name;//名称
+    private long time;//延时时间
+    private boolean flag=true;
+    private int step=0;//步
+    public Race(){
+
+    }
+    public Race(String namen) {
+        super();
+        this.name = name;
+    }
+    public Race(String name,long time){
+        super();
+        this.name=name;
+        this.time=time;
+    }
+    @Override
+    public Integer call() throws InterruptedException {
+        while(flag){
+            Thread.sleep(time);
+            step++;
+        }
+        return step;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public boolean isFlag() {
+        return flag;
+    }
+
+    public int getStep() {
+        return step;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
+    }
+
+    public void setStep(int step) {
+        this.step = step;
+    }
+}
+///////////////////停止进程/////////////////////
+package com.sxxgcd.Thread;
+
+public class StopThread {
+    public static void main(String[]args){
+        Study s=new Study();
+        new Thread(s).start();
+        //外部干涉
+        for(int i=0;i<100;i++){
+            if(50==i){
+                //外部干涉
+                s.stop();
+            }
+            System.out.println("main"+i+"........");
+        }
+    }
+}
+class Study implements Runnable{
+    //1.线程中 定义 线程体的使用标识
+    private boolean flag=true;
+    @Override
+    public void run(){
+        //2.线程体使用该标识
+        while(flag){
+            System.out.println("study thread....");
+        }
+    }
+    //3.对外提供方法改变标识
+    public void stop(){
+        this.flag=false;
+    }
+}
+/////////////////////合并 阻塞进程////jion//////////////////////
+package com.sxxgcd.Thread;
+
+import java.io.BufferedOutputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
+//join 合并线程
+public class JoinThread extends Thread {
+    public static void main(String[] args) throws InterruptedException, FileNotFoundException {
+        System.setOut(new PrintStream(new BufferedOutputStream(
+                new FileOutputStream("E:\\java\\ThreaClass\\src\\File\\print.txt")
+        ),true));
+        JoinThread j1=new JoinThread();
+        Thread t=new Thread(j1); //新生
+        j1.start();//就绪
+        //cpu调度 运行
+        for(int i=0;i<1000;i++){
+            if(50==i){
+                t.join();//main阻塞
+            }
+            System.out.println("main...."+i);
+        }
+    }
+    @Override
+    public void run(){
+        for(int i=0;i<1000;i++){
+            System.out.println("join....."+i);
+        }
+    }
+
+}
+/////////////////////yield///////////////////
+package com.sxxgcd.Thread;
+
+public class YieldThread extends Thread {
+    public static void main(String[] args) throws InterruptedException {
+        JoinThread j1=new JoinThread();
+        Thread t=new Thread(j1); //新生
+        j1.start();//就绪
+        //cpu调度 运行
+        for(int i=0;i<100;i++){
+            if(i%20==0){
+                t.yield();//暂停本线程main
+            }
+            System.out.println("main...."+i);
+        }
+    }
+    @Override
+    public void run(){
+        for(int i=0;i<10;i++){
+            System.out.println("yield....."+i);
+        }
+    }
+
+}
+//////////////////isAlive/////////////////////////////
+package com.sxxgcd.Thread;
+
+/**
+ * 1.sleep 休眠 不释放锁
+ * 与时间相关 倒计时
+ * 模拟网络延时
+ */
+public class MyThread implements Runnable{
+    private boolean flag=true;
+    private int num=0;
+    @Override
+    public void run(){
+        while(flag){
+            try {
+                Thread.sleep(100);
+                System.out.println(Thread.currentThread().getName()+"---->"+num++);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+    public void stop(){
+        this.flag=!this.flag;
+    }
+}
+package com.sxxgcd.Thread;
+
+/**
+ * Thread.currendThread() 当前线程
+ * setName() 设置名称
+ * getName() 获取名称
+ * isAlive() 判断状态
+ * 优先级 ：概率 不是绝对的先后顺序
+ * MAX_PRIORITY 10
+ * NORM_PRIORITY 5（默认）
+ * MIN_PRIORITY 1
+ * setPriority()
+ * getPriority()
+ */
+public class InfoThread {
+    public static void main(String[]args) throws InterruptedException {
+        MyThread it=new MyThread();
+        MyThread it2=new MyThread();
+        Thread p2=new Thread(it2,"挨踢2");
+        Thread proxy=new Thread(it,"挨踢");
+        proxy.setName("test");
+        System.out.println(proxy.getName());
+        proxy.setPriority(Thread.MAX_PRIORITY);//设置优先级
+        p2.setPriority(Thread.MIN_PRIORITY);//设置优先级
+        System.out.println(Thread.currentThread().getName());//main
+        proxy.start();
+        p2.start();
+        System.out.println("启动后的状态"+p2.isAlive());
+        System.out.println("启动后的状态"+proxy.isAlive());
+        Thread.sleep(200);
+        it.stop();
+        it2.stop();
+        Thread.sleep(100);
+        System.out.println("停止后的状态"+proxy.isAlive());
+        System.out.println("停止后的状态"+p2.isAlive());
+    }
+}
+////////////线程同步与锁定///////////////////////////
+package com.sxxgcd.Thread;
+//线程安全的类
+public class Web12304 implements Runnable {
+    private int num=10;
+    private boolean flag=true;
+    @Override
+    public void run(){
+        while(flag){
+            test5();
+        }
+    }
+    public void test6(){
+        if(num<=0){
+            flag=false;//跳出循环
+            return;
+        }
+        //a b c
+        synchronized (this){
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName()+"抢到了"+num--);
+        }
+    }
+    //线程不安全，锁定资源不正确
+    public void test5(){
+        //a b c
+        synchronized ((Integer)num){
+            if(num<=0){
+                flag=false;//跳出循环
+                return;
+            }
+            try {
+                Thread.sleep(500);//模拟 延时
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName()+"抢到了"+num--);
+
+        }
+    }
+    //锁定范围不正确 线程不安全
+    public void test4(){
+        //c 1
+        synchronized (this){
+            if(num<=0){
+                flag=false;//跳出循环
+                return;
+            }
+        }
+        //b
+        try {
+            Thread.sleep(500);  //模拟 延时
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Thread.currentThread().getName()+"抢到了"+num--);
+    }//a--->1
+    //线程安全 锁定正确
+    public void test3(){
+        //a b c
+        synchronized (this){
+            if(num<=0){
+                flag=false;//跳出循环
+                return;
+            }
+            try {
+                Thread.sleep(500);//模拟 延时
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println(Thread.currentThread().getName()+"抢到了"+num--);
+        }
+    }
+    //线程安全 锁定正确
+    public synchronized void test2(){
+        if(num<=0){
+            flag=false;//跳出循环
+            return;
+        }
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Thread.currentThread().getName()+"抢到了"+num--);
+    }
+    //线程不安全
+    public void test1(){
+        if(num<=0){
+            flag=false;//跳出循环
+            return;
+        }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Thread.currentThread().getName()+"抢到了"+num--);
+    }
+}

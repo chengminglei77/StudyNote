@@ -1,0 +1,173 @@
+基本知识：语法规则
+	-基本语法
+>>>>普通字符--字母 数字 汉字 下划线，以及没有特殊定义的标点符号，都是“普通字符”。表达式中的普通字符，在匹配一个字符串时，匹配与之相同的一个字符
+		简单转义字符
+			\n 换行 \t 制表符 \\代表\本身  \^ \$ \. \( \) \{ \} \? \+ \* \| \[  \]匹配这些字符本身
+>>>>>标准字符集合：能够与”多种字符“匹配的表达式 注意区分大小写，大写是相反的意思，  
+		\d 任意一个数字，0-9中的任意一个 
+		\w 任意一个字母或者数字或下划线，  
+		\s 包括空格，制表符，换行符等空白字符的其中一个 
+		. 小数点可以匹配任意一个字符，如果要匹配包括”\n“在内的所有字符一般用[\s\S]
+>>>>>>自定义字符集合 [] 方括号匹配方式，能够匹配方括号中任意一个字符
+		[ab5@] 匹配”a“或者"b"或者"5"或者"@"
+		[^abc]匹配”a“"b"”c“之外的任意一个字符
+		[f-k] 匹配”f“-"k"之间的任意一个字符
+		[^A-F0-3]匹配”A“-"F""0"-"3"之外的任意一个字符
+>>>>>正则表达式的特殊符号，被包含到中括号中则失去特殊意义，除了^ -之外
+	      标准字符集合，除小数点外，如果被包含在中括号中，自定义符号集合将包含该集合如[\d.\-+]将匹配：数字 小数点，+-
+>>>>量词---修饰匹配次数的特殊符号
+	{n} 表达式重复n次 如 \d{6}出现六次数字  {\d\d}{6}出现12次数字
+	{m,n} 表达式至少重复m次，最多重复n次
+	{m,} 表达式至少重复m次，
+	？ 匹配表达式0次或者1次，相当于{0，1} 如 a\d?b 表示a b之间至少有0个最多有1个数字
+	+ 表达式至少出现1次，相当于{1，}
+	* 表达式不出现或出现任意次，相当于{0，}
+	匹配次数中的贪婪模式（匹配字符越多越好，默认）
+	            非贪婪模式，（匹配字符越少越好，修饰匹配次数的特殊符号后再加上一个”？“号）如{\d}{3，6}？
+>>>>>字符边界  零宽度 本组标记匹配的不是字符而是位置，符合某种条件的位置
+		^ 与字符开始的地方匹配 ^i 以i开始的字符串位置
+		$ 与字符结束的位置开始  i$ 一串以i结尾的字符位置
+		\b 匹配一个单词边界	   ad\b  或者 ba\b 匹配
+		----\b匹配这样一个位置：前面的字符和后面的字符不全是\w
+			>>\b只能匹配字母、数字、汉字、下划线
+            >>\b就近匹配，比如\bAB 匹配A，AB\b 匹配B;但如果只写一个\b或者在两个字母、数字、汉字、下划线之间有\b时就在所有字符或者两个字母、数字、汉字、下划线之间所有字符去逐个匹配
+<<<<<<正则表达式的匹配模式 IGNORECASE忽略大小写模式 默认情况下，区分大小写
+                           SINGLELINE 单行模式 整个文本看作一个字符串，只有一个开头，一个结尾，使用小数点“.”可以匹配包含换行符（\n）在内的任意字符
+						   MULTILINE 多行模式 每行都是一个字符串，都有开头和结尾，在指定多行模式后，如果需要仅匹配字符串开始和结束位置，可以使用\A 和\Z
+>>>>>>选择符和分组
+        | 分支结构  左右两边表达式之间“或”关系。匹配左边或右边
+		() 捕获组 1.在被修饰匹配次数时，括号中的表达式可以作为整体被修饰，2.取匹配结果时，括号中的表达式匹配到的内容可以被单独得到3.每一对括号会分配一个编号，使用()的捕获根据左括号的顺序从1开始自动编号，捕获元素编号为0的第一个捕获是由整个正则表达式模式匹配的文本 ([a-z]{2})\1
+		(?:Expression)非捕获组，一些表达式中，不得不使用(),但又不需要保存()中子表达式匹配内容，这时可以用非捕获组来抵消使用()带来的副作用。
+>>>>>>反向引用（\nnn）
+		每一对（）会分配一个编号，使用()的捕获根据左括号的顺序从1开始自动编号，通过反向引用，可以对分组已捕获的字符串进行引用
+>>>>>预搜索
+		只进行子表达式的匹配，匹配内容不计入最终的匹配结果，是零宽度，这个位置应该符合某个条件，
+		判断当前位置的前后字符，是否符合指定的条件，但不匹配前后的字符，是对位置的匹配，
+		正则表达式匹配过程中，如果自表达式匹配到的式字符内容，而非位置，并被保存到最终的匹配结果中，
+		就认为这个子表达式式占有字符的，如果子表达式匹配的仅仅是位置，或者匹配的内容不保存到最终的匹配结果中，
+		那么就认为这个子表达式是零宽度的，占有字符还是零宽度的，是针对匹配的内容是否保存到最终的匹配结果而言的。
+		(?=exp) 断言自身出现的位置的后面能匹配到表达式exp [a-z]+(?=\d+)
+		(?<=exp) 断言自身出现的位置的前面能匹配到表达式exp
+		(?!exp)断言自身出现的位置的后面不能匹配到表达式exp
+		(?<!exp) 断言自身出现的位置的前面不能匹配到表达式exp
+------小练习：电话号码：(0\d{2,3}-\d{7,8})|(1[34589]\d{9})
+			  邮箱地址:  [\w\-]+@[a-z0-9A-Z]+(\.[A-Za-z]{2,4}){1,2}
+<<<<<<<常见正则表达式
+			匹配中文字符 [\u4e00-\u9fa5]
+			匹配空白字符 \n\s*\r
+			匹配HTML标记 <(\S*?)[^>]*>.*?^1>|<.*?>
+			匹配首尾空白字符 ^\s*|\s*$
+			匹配Email地址 \w+([-+.]\w+)*@\w+([-.]\w+)*\w+([-.]\w+)*
+			匹配网址URL [a-zA-Z]+://[^\s]*
+			匹配国内电话号码 \d{3}-\d{8}|\d{4}-\d{7}
+			匹配腾讯qq号 [1-9][0-9]{4,}
+			匹配中国邮政编码 [1-9]\d{5}(?!\d)
+			匹配身份证号 \d{15}|\d{18}
+			匹配IP地址 \d+\.\d+\.\d+\.\d+
+	-高级语法
+	-练习
+--------开发环境和文本编辑器中如何使用正则----------
+	-editplus notpad++ ultraedit eclipse使用
+		数据库中也可以使用正则
+		 Mysql 5.5之后，Oracle 10g以上，
+			  select prood_name;
+			  from products;
+		      where  prood_name REGEXP '.000'	
+Java复杂文本操作
+ --相关类位于 java.util.regex包下面
+   类Pattern ---正则表达的编译形式 Pattern p=Pattern.compile(r,int);//建立正则表达式，并启用相应模式
+   类Matcher ---通过解释Pattern对Character.sequence执行匹配操作的引擎
+				Matcher m = p.matcher(str);//匹配str字符串
+		 Pattern p=Pattern.compile("\\w+");
+        //创建Matcher对象
+        Matcher m=p.matcher("asfsd2&&3333");
+          while(m.find()){
+              System.out.println(m.group());  //m.group();返回匹配成功的序列
+              System.out.println(m.group(0));//m.group()和m.group()匹配整个满足要求的序列
+          }
+    }
+	 Pattern p=Pattern.compile("([a-z]+)([0-9]+)");
+        //创建Matcher对象
+        Matcher m=p.matcher("aa232**ss445*sds223");
+          while(m.find()){
+              System.out.println(m.group());  //m.group();返回匹配成功的序列
+              System.out.println(m.group(0));//m.group()和m.group()匹配整个满足要求的序列
+              System.out.println(m.group(1));
+              System.out.println(m.group(2));
+          }
+    }
+	    
+		Pattern p=Pattern.compile("[0-9]");
+        //创建Matcher对象
+        Matcher m=p.matcher("aa232**ss445*sds223");
+        //替换
+        String newStr=m.replaceAll("#");
+        System.out.println(newStr);
+		
+		String str="aa232**ss445*sds223";
+        String []arrs=str.split("\\b+");
+        System.out.println(Arrays.toString(arrs));
+>>>>>>网络爬虫
+	package com.xgcd.test;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * 网络爬虫取数据
+ *
+ */
+public class WebSpider {
+    /**
+     * 获取给定网页源码内容
+     * @param urlstr
+     * @return
+     */
+    public  static String getURLContent(String urlstr,String charset){
+        StringBuilder sb=new StringBuilder();
+        try {
+            URL url =new URL("http://www.163.com");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(),Charset.forName(charset)));
+            String temp="";
+            while((temp=reader.readLine())!=null){
+                sb.append(temp);
+            }
+
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
+    public static List<String> getMacherStr(String destSt,String regexstr){
+        //Pattern p=Pattern.compile("href=\\\"(.+?)\\\"");
+        Pattern p=Pattern.compile(regexstr);
+        Matcher m=p.matcher(destSt);
+        List<String> result=new ArrayList<String>();
+        while(m.find()){
+            result.add(m.group(1));
+        }
+        return result;
+    }
+    public static void main(String[]args) {
+        String destr = getURLContent("http://www.163.com", "gbk");
+        //Pattern p= Pattern.compile("<a[\\s\\S]+?</a>");//取超链接的整个内容
+        List<String> result=getMacherStr(destr,"href=\\\"([\\w\\s./:]+?)\\\"");
+        for(String temp:result)
+            System.out.println(temp);
+    }
+}
+
+软件：Regexbudy
+--分析索要匹配的数据，写出测试用的电信数据
+---在工具中进行匹配测试
+----在程序中调用通过测试的正则表达式

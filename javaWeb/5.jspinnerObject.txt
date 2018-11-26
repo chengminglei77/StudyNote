@@ -1,0 +1,261 @@
+jsp内置对象：			所属类型					有效范围 		说明
+	application    javax.servlet.ServletContext 	application 	该对象代表应用程序上下文，允许jsp页面与包含在同一应用中的程序的任何web组件分享信息
+	config			javax.servlet.ServletConfig     page			该对象允许将初始化数据传递给一个jsp页面
+	exception      javax.lang.Throwable				page			该对象含有只能由指定的Jsp“错误处理页面”访问的异常数据
+	out  			javax.servlet.JspWriter			page 			该对象提供对输出流的访问
+	page			javax.servlet.HttpJspPage    	page			该对象代表了JSP页面对应的Servlet类实例
+	pageContext    javax.servlet.jsp.PageContext  	page            该对象是jsp页面本身的上下文，它提供了唯一一组方法来管理具有不同作用域的属性，这些API在实现jsp自定义标签处理程序时非常有用
+	request   javax.servlet.http.HttpServletRequest request 	    该对象提供对http请求数据的访问，同时还提供了用于加入特定请求数据的上下文
+	response javax.servlet.http.HttpServletResonse  page            该对象允许直接访问 HttpServletResonse对象，可用来向客户端输入数据
+	session  javax.servlet.http.HttpSession         session         该对象可用来保存在服务器与一个客户端之间需要保存的数据，当客户端关闭网站所有网页时，session变量为自动消失
+	
+request response session 是jsp内置对象中重要的三个对象，三个对象体现了服务器端和客户端进行交互通信的控制。
+request对象：
+		请求对象，存储客户端想服务端发送的请求信息
+		常见方法：
+		String getParameter(String name):根据请求的字段名key<input >标签的name属性值 返回字段值value值
+		String getParameterValues(String name);用于请求的字段名key 返回多个值(checkBox)
+		void setCharacterEncoding("编码格式utf-8")：设置请求编码(tomcat8以后默认utf-8)
+		getRequestDispatcher("b.jsp").forward(request,response);请求转发的方式跳转页面A->B
+		ServletContext getServerContext():获取项目的ServletContext对象
+	在作用域中管理属性：有时需要把一些数据带到转发后的页面进行处理，这时就可以使用request对象的setAttribute()方法设置数据在request范围内存取。
+	设置转发数据的方法如下： request.setAttribute("key","object");
+	获取转发数据的方法如： request.getAttribute(String name); name 为键值名
+	注意：在setAttribute页面中必须使用JSP动作元素<jsp:forward page="getAttribute.jsp"/>将请求发送到getAttribute.jsp页面
+	获取cookie 
+			客户端，不是内置对象需要 创建)：cookie是由服务端场产生的，在发送给客户端保存。
+					相当于本地缓存：客户端-第一次请求-->服务端(资源)--->存储在客户端缓存处 提高效率 
+					作用：提高访问服务器的 效率，但安全性较差。
+				cookie:key=value javax.servlet.http.Cookie 产生
+					public Cookie(String key,String value)
+					String  getName() 获取key
+					String getValue()获取value
+					void setMaxAge(int expiry)；设置最大有效期
+				服务端发送给客户端：
+					response.addCookie(Cookie cookie);
+					页面跳转（转发重定向都可以）
+					客户端获取cookie
+						request.getCookies();//获取所有cookie 无法只拿一个
+					通过F12发现，除了自己设置的cookie对象外，还有一个name为JSESSIONID的一个cookie对象。
+	获取客户信息
+		获取客户信息的方法：
+			getHeader(String name) 或得HTTP协议定义的文件头文件
+			getHeaders(String name) 返回指定名字的request header的所有值，其结果是一个枚举的实例
+			getHeadersNames() 返回所有request Header的名字，其结构就是一个枚举的实例
+			getMethod() 获得客户端向服务端传送数据的方法，如get post 
+			getProtocol()获得客户端向服务端传送数据所依据的协议名称
+			getRequestURI() 获得发出请求字符串的客户端地址
+			getRealPath() 返回当前请求文件的绝对路径
+			getRemoteHost() 获取客户端的机器名称
+			getRemoteAddr() 获取客户端的机器IP地址
+			getServerName() 获取服务器的名字
+			getServerPaht() 获取客户端所请求的脚本文件的文件路径
+			getServerPort() 获取服务器端口号
+			实例：客户端提交方法：<%=request.getMethod()%>
+		访问安全信息：
+			对安全属性的访问：
+				isSecure() 返回布尔类型的值，它用于确定这个请求是否使用了一个安全的协议
+				isRequestedSessionIdFromCookie() 返回bool值，表示会话是否使用另一个cookie管理会话ID
+				isRequestedSessionIdFromURL() 返回bool值，表示会话是否使用了一个URL重写来管理会话ID
+				isRequestedSessionIdFromValid() 检查请求Id是否合法
+				实例： 用户安全信息：<%=request.isSecure()%>
+		访问国际化信息：
+			浏览器可以通过使用accept-language的http报头向web 服务器指明他所使用的本地语言。request中的getLocale()和
+			getLocales()方法允许jsp开发人员获取这一信息。获取的信息属于java.util.Local类型，该类型对象封装了一个
+			国家和这个国家所使用的语言。
+			实例：<%
+						java.util.Locale locale=getLocale();
+						if(locale.equals(java.util.Locale.US)){
+							out.print("welcome to BeiJing");
+						}
+						if(locale.equals(java.util.Locale.CHINA)){
+							out.print("北京欢迎你");
+						}
+				%>
+response对象
+	提供方法：
+		void addCookie(Cookie cookie);服务端向客户端增加cookie对象
+		void sendRedirect(String location) throws IOEception: 页面跳转的一种方式（重定向）,重定向地址改变为指定页面，而请求转发保持原页面，使用重定向会导致数据丢失，请求转发不会
+		void setContentType(String type) 设置服务端响应编码（设置服务端contentType）
+		请求转发和重定向的区别：a.地址栏是否改变，请求转发保持原页面，而重定向变为指定页面;
+								b.是否保留第一次请求中的数据，请求转发保留，重定向不保留；
+								c.请求次数，请求转发1次，重定向2次；
+		转发、重定向的区别；
+						转发： 客户端（张三）--->[ 服务端1（服务端口1）--->服务端口2(服务端口2)]--->zhangsan
+						重定向	客户端--->服务端口1 --->去找B   
+								客户端---->服务端口B---->客户端
+	response对象中用于重定向网页的方法：
+			sendError(int number) 使用指定的状态码想客户发送错误响应
+			sendError(int number,String msg)使用指定的状态码和描述性信息向客户发送错误响应
+			sendRedirect(String location) 使用指定的重定向位置URL向客户发送重定向响应，可以使用相对URL
+				实例：  <%
+		   request.setCharacterEncoding("utf-8");
+			String name=request.getParameter("uname");
+			String pwd=request.getParameter("upwd");
+			if(name.equalsIgnoreCase("zhangsan")&&pwd.equalsIgnoreCase("abc")){//假设用户名必须为张三&&密码必须是abc
+				response.sendRedirect("1.jsp")；
+				request.getRequestDispatcher("success.jsp").forward(request,response);
+			}else
+				//登录失败
+				response.sendError(500,"请输入正确信息")
+				request.setAttribute("error","用户名密码失误");
+			%>
+	设置HTTP响应报头response对象中设置HTTP响应报头的方法
+			setDateHeader(String name,long date) 使用给定的名称和日期值设置一个响应报头，如果指定的名称已经设置，则新值为覆盖旧值
+			setHeader(string name,String value)使用给定的名称和值设置一个响应报头，如果指定的名称已经设置，则新值为覆盖旧值
+			setHeader(String name,int value) 使用给定的名称和整型数值设置一个响应报头，如果指定的名称已经设置，则新值为覆盖旧值
+			addHeader(String name,long date) 使用给定的名称和值设置一个响应报头，
+			addDateHeader(string name,long date) 使用给定的名称和值设置一个响应报头
+			containHeader(String name) 返回一个bool值，表示是否设置了已命名的响应报头
+			addIntHeader(String name,int value) 使用给定的名称和整型值设置一个响应报头
+			setContentType(String Type) 为响应设置内容类型，参数值可以为 text/html text/plain application/x_msexcel application/msword
+			setContentLength(int len) 为响应设置内容长度
+			setLocale(java.util.Locale loc) 为响应设置地区信息
+			小技巧： 通过设置HTTP报头可实现禁用缓存功能，
+				<% response.setHeader("Cache-Control","no-store");
+					response.setDateHeader("Expires",0);%>
+			实例1：将jsp页面保存为word 文档
+				<%
+					if(request.getParameter("submit1")!=null){
+						response.setContentType("application/msword;charset=gb2312");
+					}
+				%>
+				平平淡淡才是真！
+				快快乐乐才是福！
+				<form action="" method="post" name="form1">
+				<input name="submit1" type="submit" id="submit1" value="保存为word">
+				</form>
+	缓冲区配置
+			response对象提供的配置缓冲区的方法
+			flushBuffer() 强制把缓冲区中内容发送给客户
+			getBufferSize() 返回响应所使用的实际缓冲区实际大小，如果没有使用缓冲区，则该方法返回0
+			setBufferSize(int size)为响应的主体设置首选的换成区大小
+			isCommitted() 返回一个bool值，表示响应是否已经提交，提交的响应 已经写入状态码和报头
+			reset() 清除缓冲区存在的任何数据，同时清除状态码和报头
+			<% out.print(response.getBufferSize());%>
+Session 对象用来保持客户端和服务端的连接
+    创建以及获取客户的会话
+		setAttribute(string name,string value)用于设置指定名称的属性值，并将其存储在session对象中
+		name 是属性名称 value是属性值
+		getAttribute(String name) 用于获取与指定名字name相联系的属性
+		<%
+			session.setAttribute("information","向session中存放数据");
+			response.sendRedirect("forward.jsp");
+		%>
+		forward.jsp
+		<%
+			out.print(session.getAttribute("information"));
+		%>
+	从会话中移除指定的对象
+		session.removeAttribute(String name);
+		<%
+			session.setAttribute("information","向session中保存数据");
+			response.sendRedirect("forward.jsp");
+		%>
+		forward.jsp
+		<% 
+			session.removeAttribute("information");
+			if(session.getAttribute("information")==null){
+				out.print("session对象的information已经不存在l");
+			}else{
+				out.print(session.getAttribute("information"));
+			}
+		%>
+	销毁会话 session.invalidate();session内置对象使用该方法会将会话中的全部会话	
+	会话的超时管理：
+	  确保客户会会话会终止的唯一方法使用超时设置。为了清除存储在session对象中的客户申请资源，Servlet程序容器设置
+	  个超时窗口，当非活动的时间超出了窗口的大小时，JSP容器将使session对象资源无效并撤销所有属性的绑定从而管理会话的生命周期。
+	  管理会话生命周期的方法
+	  getLastAccessedTime() 返回客户端最后一次发送与这个会话相关联的请求时间。
+	  getMaxInactiveInterval() 以秒为单位返回一个会话内俩个请求最大的时间间隔，Servlet容器在客户访问期间保存这个会话处于打开状态。
+	  setMaxInactiveInterval(int interval)一秒为单位指定在服务器小程序容器使该会话无效的客户请求之间的最长时间，也就是超时时间
+application对象 用于保存所有应用程序中的公有数据，服务器启动并且自动创建application 对象后，只要没关闭服务器application对象就一直在，
+		所有用户可以共享application对象。application和session对象有所区别，session对象和用户会话相关，不同用户的session是不同的对象，而
+		application是相同的一个对象。
+	访问程序初始化参数
+		getInitParameter(String name) 返回一个已命名的初始化参数的值
+		getInitParameterNames() 返回所有已定义的应用程序初始化参数化名称的枚举
+		实例：通过application对象调用web.xml文件的初始化参数
+			在web.xml 配置文件中通过<context-param>元素初始化参数，
+			<context-param><!--配置IP信息-->
+				<param-name>databse_host1</param-name>
+				<param-value>192.168.1.17</param-value>
+			</context-param>
+			<context-param><!--配置IP信息-->
+				<param-name>databse_host2</param-name>
+				<param-value>192.168.1.66</param-value>
+			</context-param>
+			index.jsp 
+			   <%
+        java.util.Enumeration enema=application.getInitParameterNames();
+        while (enema.hasMoreElements()){
+            String name=(String)enema.nextElement();
+            String value=application.getInitParameter(name);
+            out.print(name+"");
+            out.print(value);
+            out.print("<br />");
+        }
+      %>
+	管理应用程序环境属性
+			与session对象相同，也可以在application中设置属性。在session中设置的属性只是在当前客户的会话范围内有效，
+			可会超出保存时间不发送请求时，session对象将被回收。而application对象设置的属性在整个应用程序中都是有效的，
+			即使所有的客户不发送请求只要不关闭服务器，在其设置的属性仍然有效
+			removeAttribute(String name) 从servletContext的对象中去掉指定名称的属性
+			setAttribute(string name，Object Object)使用指定名称和对象在servletContext对象中进行关联
+			getAttribute(String name)从servletContext的对象中获取指定对象
+			getAttributeNames() 返回存储在servletContext对象中属性名称的枚举数据
+		实例：
+		<%
+			int number=0;
+			if(application.getAttribute("number")==null){
+				number=1;
+			}else {
+				number=Integer.parseInt((String)application.getAttribute("number"));
+				number++;
+
+			}
+			out.print("您是第"+number+"个用户");
+			application.setAttribute("number",String.valueOf(number));
+
+		%>	
+out对象 主要用来向用户输出数据类型的内容，并且管理应用服务器上的输出缓冲区，缓冲区默认值为8kB,可以通过页面指令更改默认值。
+	clear(); 清空缓冲区
+	clearBuffer();  清空缓冲区的“当前”内容
+	close() 先刷新流，再关闭流
+	flush() 刷新流
+	getBufferSize() 以字节为单位返回缓冲区的大小
+	getRemaining（） 返回缓冲区中没有使用的字符的数量
+	isAutoFlush() 返回bool值，自动刷新还是在缓冲区溢出时抛出IOException异常
+
+获取会话范围的pageContext对象，该对象是一个比较特殊的对象，它相当于页面中所有其他对象功能的集大成者，使用它可以访问到本页中的其他对象。
+常用 方法 ：
+		forward(java.lang.String relativeUtlpath) 把页面转发到另一个页面或者servlet组件上
+		getAttribute(java.lang.String name[,int scope])  scope是可选的，该方法用来检索一个特定的已经命名的对象
+		的范围，并且可以调用getAttribueNameInScope()方法，检索某个特定范围的每个属性String字符串名称枚举
+		getException() 返回当前Exception对象
+		getRequest() 返回当前request对象
+		getResponse() 返回当前Response对象
+		getServlet() 返回当前页面的ServletConfig对象
+		invalidate() 返回servletContext，全部销毁
+		setAttribute() 设置默认页面范围或特定对象范围中的已命名对象
+		removeAttribute() 删除默认页面范围或特定对象范围中的已命名对象
+读取web.xml配置信息的config对象
+	常用方法：
+		getSerletContext() 返回执行者的Servlet上下文
+		getServletName() 返回servlet的名字
+		getInitParameter() 返回名字为name的初始值参数
+		getInitParameterNames() 返回这个JSP所有的初始参数名字
+应答或请求page对象 为了执行当前页面应答请求而设置的servlet类接口实体，即显示JSP页面自身，只有在jsp页面内才是合法的。
+	getClass() 返回当前Object类
+	hashCode() 返回次Object的哈希代码
+	toString() 将此类转换成字符串
+	equals(Object o)
+	copy(Object o)
+	clone()
+获取异常信息的exception对象
+		getMessage() 该方法返回异常信息字符串
+		getLocalizedMessage() 该方法返回本地化语言的异常错误
+		printStackTrace() 显示异常的栈跟踪轨迹
+		toString()
+		fillInStactTrace() 重写异常错误的栈执行轨迹。
+		

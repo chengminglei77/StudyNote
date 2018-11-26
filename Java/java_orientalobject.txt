@@ -1,0 +1,334 @@
+语句多了，我们将完成同样功能的相近的语句，聚到了一块儿，便于我们使用。于是，方法出现了！
+变量多了，我们将功能相近的变量组在一起，聚到一起归类，便于我们调用。于是，结构体出现了！
+再后来，方法多了，变量多了！结构体不够用了！我们就将功能相近的变量和方法聚到了一起，于是类和对象出现了！
+面向对象的思维模式说白了就是分类思维模式。思考问题首先会解决问题需要哪些分类，然后对这些分类进行单独思考。
+最后，才对某个分类下的细节进行面向过程的思索。
+面向对象编程的本质就是：以类的方式组织代码，以对象的组织(封装)数据
+抽象是什么?就是将多个物体共同点归纳出来，就是抽出像的部分！
+从认识论角度考虑是先有对象后有类。对象，是具体的事物。类，是抽象的，是对对象的抽象。
+从代码运行角度考虑是先有类后有对象。类是对象的模板
+public class Student {
+    //静态的数据
+     String name;
+     int id;    //学号
+     int age;
+     String gender;
+     int weight; 
+//动态的行为
+ public void study(){
+ System.out.println(name+"在學習");
+ }
+  public void sayHello(String sname){
+ System.out.println(name+"向"+sname+"說：你好！");
+ }
+}
+public class Test1 {
+   public static void main(String[] args) {
+        Student s1 = new Student();
+        s1.name = "cheng";
+        s1.study();
+        s1.sayHello("wang");
+        Student s2 = new Student();
+        s2.age = 18;
+        s2.name="chengminglei";
+        }
+}
+>>>运行的内存分析
+栈：
+    1.每个线程私有，不能实现线程间的共享！
+    2.局部变量放置于栈中。
+    3.栈是由系统自动分配，速度快！栈是一个连续的内存空间！
+堆：
+    1.放置new出来的对象！
+    2.堆是一个不连续的内存空间，分配灵活，速度慢！
+方法区(也是堆)：
+    1.被所有线程共享！
+    2.用来存放程序中永远是不变或唯一的内容。（类代码信息、静态变量、字符串常量）
+引用类型的概念
+   1.java中，除了基本数据类型之外的其他类型称之为引用类型。
+   2.java中的对象是通过引用来操作的。(引用：reference)
+    说白了，引用指的就是对象的地址！	
+ 属性（field，或者叫成员变量）
+    1.属性用于定义该类或该类对象包含的数据或者说静态属性。
+    2.属性作用范围是整个类体。
+    3.属性的默认初始化：
+在定义成员变量时可以对其初始化，如果不对其初始化，Java使用默认的值对其初始化。(数值：0,0.0   char:\u0000,  boolean:false,  所有引用类型:null)  
+    4.属性定义格式：
+    [修饰符]  属性类型  属性名 = [默认值]	
+类的方法
+	方法是类和对象动态行为特征的抽象。方法很类似于面向过程中的函数。面向过程中，函数是最基本单位，整个程序有一个个函数调用组成；面向对象中，整个程序的基本单位是类，方法是从属于类或对象的。
+	方法定义格式：
+	[修饰符]  方法返回值类型  方法名(形参列表) {
+	// n条语句
+	}
+java对象的创建和使用必须使用 new 关键字创建对象。
+	Person person= new Person ();
+	使用对象（引用） . 成员变量来引用对象的成员变量。
+	person.age 
+	使用对象（引用） . 方法（参数列表）来调用对象的方法。
+	person. setAge(23) 	
+垃圾回收机制(Garbage  Collection)
+JAVA的内存管理实际上指的就是对象的管理，其中包括对象空间的分配和释放。
+
+对象空间的分配
+使用new关键字创建对象即可
+对象空间的释放
+将对象赋值null，即该对象没有引用指向时。垃圾回收器将负责回收所有”不可达”对象的内存空间。
+要点
+	1.程序员无权调用垃圾回收器。
+	2.程序员可以通过System.gc()。通知GC运行，但是JAVA规范并不能保证立刻运行。
+	3.finalize方法，是JAVA提供给程序员用来释放对象或资源的方法，但是尽量少用。
+方法的重载是指一个类中可以定义有相同的名字，但参数不同的多个方法。 调用时，会根据不同的参数表选择对应的方法。	
+>>>>>Static 关键字 
+	在类中，用static声明的成员变量为静态成员变量
+		1.它为该类的公有变量，属于类，被该类的所有实例共享，在类被载入时被显式初始化
+		2.对于该类的所有对象来说，static成员变量只有一份，被该类的所有对象共享
+		3.可以使用对象.属性来调用，不过一般都是利用类名.属性名来调用static变量
+		4.用static声明的方法是静态方法
+		5.不需要对象，就可以调用类名.方法名
+	在调用该方法是，不会将对象的引用传给他，所以子啊static方法中不可访问非静态成员，可以通过对象应用或类名（不需要实例化）访问静态成员
+>>>>>this 关键字
+	普通方法中，this 总是指向调用该方法的对象
+	构造方法中，this总是指向正要初始化的对象
+ ----this最常的用法：
+	1.让类中的一个方法，访问 该类的另一个方法或者属性
+	2.使用this关键字调用重载构造方式。避免相同的初始化代码，只能在构造方法中调用并且是构造方法的第一句
+------this使用时的注意事项
+	.this不能用于static方法，(this指向当前对象，static方法跟对象没有关系)
+	 public class Student {
+     String name;
+     int id;   
+  public  Student(String name,int id){
+     this(name);   //通过this调用其他构造方法，必须位于第一句！ Constructor call must be the first statement in a constructor
+     this.name = name;
+     this.id = id;
+ }
+ 
+ public Student(String name){
+     this.name = name;
+ }
+ public Student(){
+     System.out.println("构造一个对象");
+ }
+ 
+ public void setName(String name){
+     this.name = name;
+ }
+ 
+ public void study(){
+     this.name=  "张三";
+     System.out.println(name+"在學習");
+ }
+  public void sayHello(String sname){
+     System.out.println(name+"向"+sname+"說：你好！");
+     }
+}
+>>>>>>继承
+		第一好处：继承的本质在于抽象，类式对对象的抽象，继承是对某一批类的抽象
+		第二好处：为了提高代码的复用性
+		extends的意思是“扩展”，子类是父类的扩展，Java中类只有单继承没有多继承，接口可以多继承
+-------继承	
+		public class testsTatic {
+        String eye;
+        public void run() {
+            System.out.println("跑跑！");
+        }
+        public void eat() {
+            System.out.println("吃吃！");
+        }
+        public void sleep() {
+            System.out.println("zzzzz");
+        }
+        public testsTatic() {
+            System.out.println("创建一个动物！");
+        }
+        public static void main(String[] args){
+            Bird b = new Bird();
+            b.run();
+        }
+    }
+class Mammal extends testsTatic {
+    public void taisheng() {
+        System.out.println("我是胎生");
+    }
+}
+class Bird extends testsTatic{
+    public void eggSheng() {
+        System.out.println("卵生");
+    }
+}
+>>>>>方法的重写（override）
+	在子类中可以根据需要对基类中继承来的方法进行重写，重写的方法必须和被重写方法具有相同的方法名称，参数列表和返回类型，重写方法不能用比被重写方法更严格的范围权限。
+	----方法重载指的是：同一类中，一个方法对应了多个方法（形参列表不一样）
+	-----方法的重写指的是：子类重写了父类的方法
+>>>>>Object类
+  Object类是所有类的根基类，如果在类的声明中未使用extends关键字指明其基类，则默认基类为Object类
+  ----public class Person{}等价于 public class Person extends Object{}
+>>>>>>toString 方法 
+	--Object类中定义又public String toString()方法，其返回值是String类型，和当前对象有关信息
+	--在进行String 与其他类型数据进行来连接操作时（如 System.out.println("info"+person);）自动调用该对象类的toString()方法.
+>>>>>>equals方法
+     --Object类中定义有public Boolean equals（Objecet obj）方法，提供定义对象是否相等的逻辑，Object 的 equals 方法 定义为：x.equals ( y ) 当 x 和 y是同一个对象的应用时返回 true 否则返回 false
+>>>>>>super
+	 --super 是直接父类对象的引用，可以通过super 来访问父类中被子类覆盖的方法或属性
+	   除了Object类之外其他所有类的构造方法第一句总是super(),任何类的构造方法，若是构造方法的第一行代码没有显示的调用super(),那么Java会默认调用super()
+>>>>>继承和组合 共同点：都可以实现代码的复用
+				不同点 is-a关系：使用继承
+				        has-a关系：使用组合
+>>>>>final的用法
+	--修饰变量 被final修饰的变量不可改变，即初始化一次之后，就不能再次被赋值，即变为常量
+	--修饰方式 被修饰的方法不可以被子类重写
+	--修饰符 被final修饰的类不能被继承
+>>>>>面向对象三大特征：继承 封装 多态
+	封装 ：程序设计追求“高内聚，低耦合”。高内聚就是类的内部数据操作细节自己完成，不允许外部干涉，低耦合：仅暴露少量的方法给外部使用
+			便于调用者使用，良好的封装，便于修改内部代码，提升可维护性。良好的封装，可进行数据完整性检测，保证数据的有效性。
+	使用访问控制符，实现封装
+								同一个类   同一个包中 子类  所有类
+	private 					*
+	default(即不加修饰符的时候) *			*
+	protected					*           *          *
+	public 						*			*		   *		*
+    ---细节 属性一般使用private （除非本属性确定会让子类继承并且使用），提供相应的get/set方法来访问相关属性，这些方法通常是public，从而提供对属性的访问
+            一些只用于本类中的辅助性方法可以用private，希望其他类调用的方法用public
+	多态：多态性是oop中的一个重要特性，主要用来实现冬天连边的，换句话说，就是程序的臮状态只有在执行过程中才被决定而非在编译期间就决定了，这对于大型系统来说提高系统的灵活性和扩展性。
+			多态性可以让我们不关心某个对象到底是什么类型，就可以使用该对象的某些方法，从而实现更加灵活的编程，提高系统的可扩展性。多态性是指允许不同类的对象对同一消息作出不同的响应。
+	引用变量的两种类型：编译时类型（模糊一点，一般是一个父类）由声明时的类型决定。运行时类型（运行时，具体是哪个子类就是哪个子类）
+	由实际对应的对象类型决定。通过动态绑定调用该对象的方法。	
+	执行调用方法时，系统根据相关信息，能够执行内存地址中代表该方法的代码。分为静态绑定和动态绑定。静态绑定：
+	在编译期完成，可以提高代码执行速度。
+	动态绑定：通过对象调用的方法，采用动态绑定机制。这虽然让我们编程灵活，但是降低了代码的执行速度。这也是JAVA比C/C++速度慢的主要因素之一。JAVA中除了final类、final方、static方法，所有方法都是JVM在运行期才进行动态绑定的。	
+	多态的使用要点
+	1.多态是方法的多态，属性没有多态性。
+	2.编写程序时，如果想调用运行时类型的方法，只能进行类型转换。不然通不过编译器的检查。但是如果两个没有关联的类进行强制转换，会报：ClassCastException。 比如：本来是狗，我把它转成猫。就会报这个异常。
+	3.多态的存在要有3个必要条件：要有继承，要有方法重写，父类引用指向子类对象
+	对象的转型(casting)
+	为什么需要强制转换类型？
+	引用变量只能调用它编译类型的方法，不能调用它运行类型的方法。这时，我们就需要进行类型的强制转换！
+	一个父类的引用类型变量可以“指向”其子类的对象。
+	一个父类的引用不可以访问其子类对象新增加的成员（属性和方法）。
+	可以使用 引用 变量 instanceof 类名 来判断该引用型变量所“指向”的对象是否属于该类或该类的子类。
+	子类的对象可以当作基类的对象来使用称作向上转型（upcasting），反之称为向下转型（downcasting）
+>>>>>抽象方法
+     只声明了方法，同时使用了abstract修饰符，没有方法体，必须在子类来重写包含抽方法的类，必须设计成抽象类。	 
+	--使用要点：
+		1.通过抽象类，可以避免子类设计的随机性
+		2.有抽象方法的类只能定义抽象类
+		3.抽象类不能实例化，及不能用new来实例化抽象类
+		4.抽象类可以包含属性。方法。构造方法，但是构造方法不能用来new实例，只能用来被子类调用
+		5.抽象类只能用来继承
+		6.抽象方法必须被子类实现
+>>>>>>>接口
+		普通类：只有具体实现
+		抽象类：具体实现和规范(抽象方法) 都有！
+		接口：只有规范！
+		--接口就是比“抽象类”还抽象的“抽象类”，可以更加规范的对子类进行约束，全名地专业地实现了：规范和具体实现的分离
+         抽象类还提供某些具体实现，接口不提供任何实现，接口中所有的方法都是抽象类，接口是完全面向规范的，规定了一批具有的公共方法规范。
+		 从接口的实现者角度看，接口定义了可以向外部提供的那些服务。，从接口的调用者角度看，接口定义了实现者能提供的那些服务。
+		 接口是俩个模块间通信的标准，通信的规范，如果能把你要设计的系统之间模块之间的接口定义好，就相当于完成了系统的设计大纲，剩下的就是添砖加瓦的具体实现。
+		 [访问修饰符]  interface 接口名   [extends  父接口1，父接口2…]  {
+				常量定义
+				方法定义
+			}
+		访问修饰符：只能是public或默认。接口名：和类名采用相同命名机制，extends：接口可以多继承，常量：接口中的属性只能是常量，总是：public static final 修饰。不写也是。
+		方法：接口中的方法只能是：public abstract。 省略的话，也是public abstract.	
+------接口使用要点：
+		1.子类通过implements来实现接口中的规范
+		2.接口不能创建实例，但是可用于声明引用变量类型。
+		2.一个类实现了接口，必须实现接口中所有的方法，并且这些方法只能是public的。
+		4.接口中只能包含静态常量，抽象方法，不能有普通属性，构造方法，普通方式。
+		5.常量必然是：public static final ，不加修饰符也是这样。
+		6.方法必然是：public abstrct ,不加也是这样。
+		7.接口完全支持多继承，和类的继承类似，子接口扩展某个父接口，将会获得父接口中所定义的一切。
+>>>>>>回调的实现
+		public class PaintFrame {
+    public static void drawFrame(IMyFrame f){
+        System.out.println("启动线程");
+        System.out.println("增加循环");
+        System.out.println("查看消息栈");
+        //画窗口
+        f.paint();
+        System.out.println("启动缓存，增加效率");
+    }
+    public static void main(String[] args) {
+        drawFrame(new GameFrame01());
+        drawFrame(new GameFrame02());
+    }
+}
+
+class GameFrame01 /*extends MyFrame*/ implements IMyFrame {
+    public void paint(){
+        System.out.println("GameFrame01.paint()");
+        System.out.println("画窗口");
+    }
+}
+
+class GameFrame02 /*extends MyFrame*/implements IMyFrame {
+    public void paint(){
+        System.out.println("GameFrame02.paint()");
+        System.out.println("画窗口");
+    }
+}public class MyFrame {
+        public void paint(){
+            System.out.println("把自己窗口画出来！");
+        }
+}
+interface IMyFrame {
+    void paint();
+}
+>>>>>>组合
+	--使用组合可以获得更多的灵活性，继承是一种高度的耦合，派生类和基类仅仅的绑在一起，灵活性大大降低如果是is-a y用继承，has-a y用组合
+	  一般情况下，我们把类定义成独立的单元，有些情况下，可以把一个类放在另一个类的内部定义，称为内部类。
+>>>>内部类
+	--内部类的作用：
+		1.内部类提供了更好的封装。只能让外部类直接访问，不允许同一个包中的其他类直接访问。
+		2.内部类可以直接访问外部类的私有属性，内部类被当成其外部类的成员，但外部类不能调用内部类的内部属性。
+	--内部类的使用场合：
+		由于内部类提供了更好的封装特性，并且可以很方便的访问外部类的属性，所以，通常内部类只为所在外部提供服务的情况下优先使用
+	--内部类的分类：
+		成员内部类（可以使用private protected） public 任意进行修饰。类文件：外部类$内部类.class）
+		  非静态内部类（外部类例使用非静态类和平时使用其他类没有不同）
+		  i.非静态内部类必须寄存在一个外部类例，因此，如果有一个非静态内部类对象那么一定存在对应的外部类的对象，非静态内部类对象单独属于外部类的某个对象。
+		  ii.非静态内部类可以使用外部类的成员，但是外部类不能直接访问非静态内部类成员。
+		  iii.非静态内部类不能有静态方法、静态属性、静态初始化块。
+		  iv.静态成员不能访问非静态成员：外部类的静态方法、静态代码块不能访问非静态内部类，包括不能使用非静态内部类定义变量、创建实例。
+		  v.成员变量访问要点：
+			1.内部类里方法的局部变量：变量名
+			2.内部类属性：this.变量名
+			3.外部类属性：外部类名.this.变量名
+		vi.内部类的访问：
+			1.外部类中定义内部类：new InnerClass()
+			2.外部类以外的地方使用非静态内部类：
+		ii.使用要点：
+			1.当一个静态内部类对象存在，并不一定存在对应的外部类对象。因此，静态内部类的实例方法不能直接访问外部类的实例方法。
+			2.静态内部类看做外部类的一个静态成员。 因此，外部类的方法中可以通过：静态内部类.名字 访问静态内部类的静态成员。通过 new 静态内部类()访问静态内部类的实例。
+			3.在外部类的外面创建静态内部类：	
+			Face.Nose nose =  new Face().new Nose();
+			Face f2 = new Face();
+		局部内部类
+			--定义在方法内部。作用域只限于本方法。用的非常少。	Face.Nose nose2 = f2.new Nose(); 
+		字符串（java.lang.String类）的使用
+				char charAt(int index)
+				返回字符串中第index个字符。 
+				boolean equals(String other)
+				如果字符串与other相等，返回true
+				boolean equalsIgnoreCase(String other)
+				如果字符串与other相等（忽略大小写），则返回true 
+				int indexOf(String str)    lastIndexOf()
+				int indexOf(String str,int fromIndex)
+				返回与str匹配的第一个字串的开始位置，该位置从0或fromIndex开始计算，如果原始串中不存在str，返回-1.  
+				int length()
+				返回字符串的长度。 
+				String replace(char oldChar,char newChar)
+				返回一个新串，它是通过用 newChar 替换此字符串中出现的所有oldChar而生成的 
+				boolean startsWith(String prefix)
+				boolean endsWith(String prefix)
+				如果字符串以prefix结尾，则返回true
+				String substring(int beginIndex)
+				String substring(int beginIndex,int endIndex)
+				返回一个新字符串，该串包含从原始字符串beginIndex到串尾或endIndex-1的所以字符
+				String toLowerCase(
+				返回一个新字符串，该串将原始字符串中的所有大写字母改成小写字母
+				String toUpperCase()
+				返回一个新字符串，该串将原始字符串中的所有小写字母改成大写字母
+				String trim()
+				返回一个新字符串，该串删除了原始字符串头部和尾部的空格

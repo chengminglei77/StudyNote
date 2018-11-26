@@ -1,0 +1,16 @@
+四种范围对象：（小-->大）
+	pageContext  JSP页面容器   （也称为page对象）当前页面有效
+	request    请求对象  同一次请求有效 
+	session 	会话对象  同一次会话有效
+	application  全局对象  全局有效
+四种对象的公用的方法：
+		Object getAttribute(String name);//根据属性名获取属性值
+		void setAttribute(String name,Object obj);//设置属性值（新增，修改）
+			setAttribute("a","b");//如果a对象之前不存在，则新建一个a对象，如果a之前已经存在，则将a的值改为b
+		void removeAttribute(String name);//删除对象
+	pageContext 当前页面有效(页面跳转后无效)
+	request 请求对象 同一次请求有效，其他请求无效 ，（请求转发有效，重定向无效）
+	session 同一次会话有效，只要浏览器不关闭都有效，或切换
+	application 全局变量：整个项目运行有效，更换浏览器，关闭浏览器都有效，当项目结束时无效。
+	
+	

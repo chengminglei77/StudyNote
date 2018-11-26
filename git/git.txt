@@ -1,0 +1,113 @@
+Git常用操作
+创建版本库 
+ mkdir e:/GitRepo   创建一个新的目录
+ cd e:/GitRepo   进入目录
+ git init  将这个目录变成GIt可以管理的仓库，即创建版本库
+ Git 提示这是一个空的仓库，事实上GitRepo中有一个隐藏的文件.git，这就是我们建立的版本库。
+ 添加文件与提交
+ 使用命令 git add filename
+ touch a.txt 新建一个空的文件
+ git add a.txt 命令只将文件添加到了暂存区，还没提交到版本库
+ 提交文件  git commit -m "log message" filename
+ -m 后的log message是本次提交的日志文件 最好写有意义的信息
+   git commit -m "create a.txt" a.txt
+   输出[master (root-commit)2df1117]create a.txt
+        1 file changed,0 insertions(+),0 deletions(-)
+		create mode 100644 a.txt
+   此时a.txt就提交到了版本库中
+ 状态查看
+   使用命令
+	git status
+	对上述操作的每一步进行状态查看：
+	新建文件
+    输入：touch new.txt 
+	      git status 
+	输出：On branch master
+			Untracked file:
+			  (use "git add<file>..." to include in what will be committed)
+						new.txt(红色显示)
+		文件未添加至暂存区，以红色显示
+    添加文件：
+	输入：git add new.txt 
+		  git status
+	输出：On branch master
+			Untracked file:
+			  (use "git add<file>..." to unstage)
+					new file:	new.txt(绿色显示)	  
+	文件添加至暂存区，但是还未提交，显示绿色
+	提交文件：
+	输入：git commit -m "create new.txt" new.txt
+	输出：[master 3df4e89]create new.txt
+        1 file changed,0 insertions(+),0 deletions(-)
+		create mode 100644 new.txt
+	文件提交至版本库，显示工作区干净
+	输入：git status
+	输出：On branch master
+		  nothing to commit,working tree clean
+		  
+	修改文件
+	 输入：vi new.txt
+	  i 插入信息  q 退出  wq 保存并退出 !q强制退出
+		git status
+	 输出：Changes not stage for commit:
+	     (use "git add<file>..." to update what will be committed)
+		  (use "git checkout --<file>..." to discard changes in working directory)
+		  modified: new.txt
+		  
+		  no changes added to commit (use "git add" and/or "git commit -a")
+		  文件被删除，显示为红色，这是我们仍然需要进行 git add 和git commit
+		  删除文件 rm -f filename
+		  输入： rm -f a.txt
+		      git status
+		  输出：on branch master
+				Changes not stage for commit:
+				 (use "git add<file>..." to update what will be committed)
+				  (use "git checkout --<file>..." to discard changes in working directory)
+				  deleted: a.txt
+				no changes added to commit (use "git add" and/or "git commit -a")
+		    
+		  删除之后也需要add  和commit
+	版本回退
+			使用命令 git reset -- hard HEAD^
+		当前版本中new.txt中的内容
+			cat filename：用于浏览文件的内容
+		现在要求回到前一版本
+		 输入：git reset --hard HEAD^
+		  输出： HEAD is now at 4d08f48 update04 new.txt
+		  git reset --hard HEAD^ 命令中HEAD 的上标^的个数表示回退几个版本
+		  如果要求回退100个版本难道要用100个^吗？这显然是不合理的。所以可以写成HEAD~100
+		  
+	回退至指定版本
+		1.git reflog :查看所有分支的所有操作记录 
+		2.gitreset --hard id；回退指定版本
+版本对比
+	git diff HEAD -- filename 对比工作区与暂存区最新版本的区别
+	显示暂存区最新版本比工作区中的多了一部分 “444444444444”
+	对比两个版本的区别
+	git diff id1 id2
+	撤销对工作区的修改有俩种情况：
+			1.修改了，还没有添加到缓存区，撤销后，文件恢复到源先版本的文件
+			2.修改了，添加到了缓存区，撤销后，文件恢复到刚刚添加进缓存区时的文件
+			撤销后，恢复到最近一次 git add 和 git committ
+撤销修改 
+ 已修改 未add
+ 使用git checkout --filename 撤销对工作区的修改
+ 已修改 已add
+ 使用 git reset HEAD filename 
+  git reset 命令可以回退版本，也可把暂存器的修改回退到工作区，当使用HEAD，标识最新的版本。
+ 已修改 已add 已commit
+  使用版本返回来撤销
+Git 的分支  项目开发中，有很多小组共同开发项目，最后小组的成功进行组合，总项目完成，每一个小组就是一个分支
+    查看当前所有的分支
+     git branch  显示当前的分支有 master 是主分支
+   新建分支
+     git branch name 
+	切换分支 git checkout name
+	删除分支：
+		git branch -d name
+	合并分支  git merge name 
+    在主分支中查看cheng.txt  在 name中对cheng.txt进行修改并提交至版本库
+	切 回主分支，没有改变，需要进行分支合并，合并后就能看见在name下的修改了
+版本冲突
+		 在主分支中对cheng.txt进行修改，将修改后的文件提交至版本库，而在其他分支 下，也被人修改
+		 当其他分支与master合并时，使用命令git log --graph可以看见分支合并图。

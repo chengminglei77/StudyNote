@@ -1,0 +1,255 @@
+????????????Enmuetation??????
+package com.xgcd.Vector;
+import java.util.Enumeration;
+import java.util.Vector;
+/**
+ * enmueration的使用
+ * 1.判断 hasMoreElements()
+ * 2.获取 nextElement();
+ */
+public class Demo1 {
+    public static void main(String[]args){
+        Vector<String> vector=new Vector<String>();
+        vector.add("javase");
+        vector.add("html");
+        vector.add("oracle");
+        //遍历该vector
+        Enumeration<String> en=vector.elements();
+        while(en.hasMoreElements()){
+            System.out.println(en.nextElement());
+        }
+    }
+}
+package com.xgcd.Vector;
+/**
+ * Enumeration子类
+ * StringTokenizer:String spilt() 字符串
+ * 不支持正则表达式
+ *
+ * StringTokenizer(String str,String delim)
+ */
+
+import java.util.StringTokenizer;
+
+public class Demo2 {
+    public static void main(String[]args){
+        String emailStr="bjsxt@163.com;bjsxt@qq.com;bjsxt@sohu.com";
+        StringTokenizer token=new StringTokenizer(emailStr,"@");//分割效果
+        while(token.hasMoreElements()){
+            System.out.println(token.nextElement());
+        }
+    }
+}
+
+
+Hashtable与HashMap区别:
+        1)主要:Hashtable线程安全,同步,效率低下
+        HashMap线程不安全,非同步,效率相对高.
+        2)父类:Hashtable 是Dictionary,HashMap是AbstractMap
+        3)null:Hashtable键与值不能为null
+        HashMap键最多一个null,值可以多个null.
+Properties代码的如下:
+        .作用:读取资源配置文件
+        .键与值只能为字符串.
+        .方法：setProperty(String key,String value);
+	package com.xgcd.Properties;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
+
+/**
+ * 使用Properties 输出到文件
+ * 资源配置文件：
+ * 1..properties
+ *  store(OutputStream out,String comments)
+ *  store(Writer writer,String comments)
+ *  2.xml文件
+ *  storeToXML(OutputStream os,String comment):UTF-8
+ *  storeToXML(OutputStream os,String comment,Sting endcoding)
+ *
+ *  使用Properties读取配置文件
+ *  资源配置文件
+ *  使用相对位置和绝对路径读取
+ *  load(InputStream inStream)
+ *  load(Reader reader)
+ *  loadFromXML(InputStream in)
+ *
+ *  使用类的相对路径
+ *  bin
+ */
+public class DemoOut {
+    public static void main(String[]args) throws IOException {
+        //创建对象
+        Properties pro=new Properties();
+        //存储
+        pro.setProperty("driver","oracle.jdbc.oracleDriver");
+        pro.setProperty("url","jdbc:oracle:thin:@localhost:1521:orcl");
+        pro.setProperty("user","scott");
+        pro.setProperty("pwd","tiger");
+        //存储到 绝对路径 盘符
+        pro.store(new FileOutputStream(new File("F:/java/threehundredClass/src/com/xgcd/Properties/db.properties")), "db配置");
+        pro.storeToXML(new FileOutputStream(new File("F:/java/threehundredClass/src/com/xgcd/Properties/db.xml")),
+                "db配置");
+        //使用相对路径 当前工程
+        pro.store(new FileOutputStream(new File("db1.properties")),"db配置");
+        pro.store(new FileOutputStream(new File("src/db1.xml")),"db配置");
+        //读取路径
+        pro.load(new FileReader("F:/java/threehundredClass/src/com/xgcd/Properties/db.properties"));
+        System.out.println(pro.getProperty("user"));
+        //类的相对路径的 /bin
+        pro.load(DemoOut.class.getResourceAsStream("/com/xgcd/Properties/db.properties"));
+        //"" bin
+        // pro.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("com/xgcd/Properties/db.properties"));
+        System.out.println(pro.getProperty("url"));
+
+    }
+
+}
+	/////引用的分类： 强 软 虚 弱
+	package com.xgcd.three;
+
+import java.lang.ref.WeakReference;
+import java.util.EnumMap;
+import java.util.IdentityHashMap;
+import java.util.WeakHashMap;
+
+/**
+ * 引用分类：强 软 弱 虚
+ * 强与弱引用
+ * WeakHashMap 键位弱类型 gc 运行即回收
+ *IdentityHashMap 键比较去重
+ * EnumMap 要求键为枚举
+ *
+ */
+public class RefDemo {
+    public static void main(String[]args){
+        //字符串常量池
+        String str =new String("sxxgcd is very good");
+        //弱引用 管理 对象
+        WeakReference<String> wr=new WeakReference<String>(str);
+        System.out.println("gc运行前"+wr.get());
+        //断开引用
+        str=null;
+        //通知回收
+        System.gc();
+        System.runFinalization();
+        //对象被回收
+        System.out.println("gc运行后"+wr.get());
+
+        WeakHashMap<String,String> map =new WeakHashMap<String,String>();
+        //测试数据
+        //常量池对象，不会回收
+        map.put("abc","a");
+        map.put("d","test");
+        //gc运行 已被回收
+        map.put(new String("sxxgcd"),"c");
+        map.put(new String("dsf"),"d");
+        //通知回收
+        System.gc();
+        System.runFinalization();
+        System.out.println(map.size());
+
+        IdentityHashMap<String,String> map1=new IdentityHashMap<String,String>();
+        //常量池中的“a”
+        map1.put("a","a1");
+        map1.put("a","a2");
+        System.out.println(map1.size());
+        map1.put(new String("a"),"a3");
+        map1.put(new String("a"),"a4");
+        System.out.println(map1.size());
+
+        EnumMap<Season,String> map2=new EnumMap<Season, String>(Season.class);
+        map2.put(Season.SPRING,"春困");
+        map2.put(Season.SUMMER,"夏无力");
+        map2.put(Season.AUTUMN,"秋乏");
+        map2.put(Season.WINTER,"冬眠");
+        System.out.println(map2.size());
+    }
+
+}
+enum Season{
+    SPRING,SUMMER,AUTUMN,WINTER
+}
+///////////////////////////
+package com.xgcd.three;
+
+import java.util.*;
+
+/**
+ * 使用Collections 管理同步 容器
+ * synchronizedList()
+ * synchronizedSet()
+ * synchronizedMap()
+ * 只读设置
+ * emptyList()
+ * emptyMap()
+ * emptySet()
+ * 2.singletonXxx()一个元素不可变的集合
+ * singleton(T 0)
+ * singletonList(T o)
+ * singleton(K key,V value)
+ * 3.unmodifiableXxx() 不可变容器
+ * unmodifiableList(List<? extends T>list)
+ * unmodifiableSet(Set<? extends T>s)
+ */
+public class Synread {
+    public static void main(String[]args){
+        List<String> list =new ArrayList<String>();
+        list.add("a");
+        list.add("b");
+        //list可以同步
+        List<String> synlist=Collections.synchronizedList(list);
+        System.out.println("线程安全的list制作完比");
+        Map<String,String> map=new HashMap<String,String>();
+        map.put("test","test");
+        map.put("sxxgd","sxxgd");
+        //只读控制
+        Map<String,String> map2=Collections.unmodifiableMap(map);
+  //      map2.put("a","a");//不能操作
+        System.out.println(map2.size());
+        //一个元素的容器测试
+        List<String> list1 =Collections.singletonList(new String("ltest"));
+        //oper(list1);
+        //list1.set("test");
+        //list.add("Sxxgcd");//只能包含一个元素容器
+        System.out.println(list1.size());
+
+    }
+    public static List<String> oper(List<String> list){
+        if(null==list)
+            return Collections.EMPTY_LIST;//外部获取避免NullPointerException/
+        return list;
+    }
+}
+////////////////////////////////////
+，三个知识点：
+        1）迭代器
+            1）Itarator接口
+                boolean hasNext();
+                   next();
+                boolean remove();
+            2)foreach:java.lang.Iterable+iterator();
+        2）比较器:
+            1)实体类可以排序 java.lang.Comparable+compareTo
+            2)排序比较器（解耦，多种排序规则）Comparator+compare
+                list+Collection.sort();
+                TreeSet
+                TreeMap
+        3）泛型：<>
+            泛型类，泛型方法，泛型接口，泛型的擦除，通配符？extends,super,泛型的嵌套
+    6.六个接
+            Collection ,Set, List,Map,Iterator,Comparable
+    9,九常用类：
+        1）ArrayList
+        2)LinkedList
+        3)HashSet
+        4)TreeMap
+        5)hashMap
+        6)Properties
+        7)Hashtable
+        8)Stack:栈
+        9）Collections:工具类。
+	

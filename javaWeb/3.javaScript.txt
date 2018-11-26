@@ -1,0 +1,57 @@
+javaScript 事件 JavaScript和web页面之间的交互是通过用户操作浏览器页面时触发相关事件来实现的。
+	例如，在页面加载完毕时，将触发load(载入)事件,当用户单击按钮时，将会触发按钮的click事件等。
+	A.事件处理程序有以下俩种分配方式:
+		a.在javascript中分配事件处理程序
+			在javaScript中分配事件处理程序，首先要或得要处理对象的引用，然后将要执行的处理函数赋值给对应的事件处理程序。
+				例如,<img src="images/download.GIF" id="img_download">
+						<sript language="javascript">
+						 var img =document.getElementById("img_download");
+						 img.onClick=function(){
+							alert("单击了图片");
+						 }
+						 <script>
+				在页面上加上面代码，并运行，当单击图片img_download时，将弹出“单击了图片”对话框。
+				注意：在JavaScript中分配了事件处理程序时,事件处理程序名称必须为小写才能正确响应事件。
+		b.在HTML中分配事件处理程序
+			在HTML中分配事件处理程序，只需要在HTML标记中添加相应事件处理程序的属性，并在其中指定作为属性值的代码
+			 或者是函数名称即可。
+				例如，<img src="images/download.GIF" onClick=alert("单击了图片")>
+	B.事件类型
+		1.blur onblur 元素或窗口本身失去焦点时触发
+		2.change onchange 选中<select>元素中的选项或其他表单元素失去焦点时，并且在其获取焦点后内容发生改变时触发。
+		3.click  onclick 单击鼠标左键时触发。
+		4.focus onfocus 任何元素或窗口本身或得焦点时触发
+		5.keydown onkeydown 键盘按键按下时触发，如果一直按着按键，则会不断触发，当返回false时，取消默认动作。
+		6.load onload 页面完全载入后，在window对象上触发，所有框架载入后，在框架集上触发，<img> <object>
+		7.select on select 选中文本时触发
+		8.submit onsubmit 单击提交按钮时，触发
+		9.unload onunload 页面完全卸载后，在window对象上触发，或者所有框架都卸载后，在框架集上触发
+	C.javaScript常用对象的应用
+		String Data 
+		window对象是浏览器的文档对象模型结构中最高级的对象，他处于对象层次的顶端，提供了控制浏览窗口的属性和
+		方法。
+		 常用属性：
+			frames 表示当前窗口中所有frame对象的集合。
+			location 用于代表窗口或框架的Location对象，如果将一个RUL赋值于该属性，那浏览器加载并显示该URL指定的文档
+			length 窗口或框架包含的框架数，
+			history 对窗口或框架的history对象的只读引用
+			name 用于存放窗口的名字
+			status 一个可读写的字符，用于指定状态栏中的当前信息
+			parent 表示包含当前窗口的父窗口
+			opener 表示只打开当前窗口的父窗口
+			closed 一个只读的布尔值，表示当前窗口是否关闭，当浏览器窗口关闭时，表示该窗口的window对象并不会消失，不过他的closed属性被设置为true
+		常用方法：
+			alert() 弹出一个警告对话框
+			confirm() 显示一个确认对话框，单击确认按钮时返回true  否则返回 false
+			prompt() 弹出一个提示对话框，并要求输入一个简单的字符串
+			close() 关闭窗口
+			focus() 把键盘的焦点赋予顶层浏览器窗口，在多数平台上，这将使用窗口移到最前面
+			open() 打开一个新的窗口
+			setTimeout(timer) 在经过指定的时间后执行代码
+			clearTimeout() 取消对指定代码的延迟处理
+			resizeBy(offsetx,offsety) 按照指定的位移设置窗口大小
+			print() 相当于浏览器工具栏中的打印按钮
+			setInterval() 周期执行指定的代码
+			clearInterval()  停止周期性执行的代码
+			
+		

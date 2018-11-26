@@ -1,0 +1,253 @@
+何时使用： 需要知道很多关于文档的结构
+		   需要将文档的部分周围（例如，可能需要某些元素进行排序）
+		   需要使用的文件中的信息超过一次
+会得到什么：当使用DOM解析器解析一个xml文档，会得到一个树形结构，其中包含的所有的文档元素，
+			DOM提供了许多可以用于检查文档内容和结构的函数。
+优势：DOM是用于处理文档结构的通用接口，他的一个设计目标是Java代码
+	   编写一个DOM兼容的解析器，运行在任何其他的DOM兼容的解析器不会有
+	   变化。
+DOM接口：
+		节点：--DOM的基本数据类型
+		元素：--要处理的对象大多数是元素
+		Attr:--代表元素的属性
+		文本：元素或Attr的实际内容
+		文档：代表整个XML文档，文档的对象通常被称为DOM树。
+常见的DOM方法：
+			Document.getDocumentElement() 返回文档的根元素
+			doc.getDocumentElement().normalize();
+			//getDocumentElement该属性允许直接访问文档的文档元素的子节点
+			//normalize将此 Node 之下完整的深层子树中所有 Text 节点（包括属性节点）放入只有结构（如元素、注释、处理指令、CDATA
+			节和实体引用）分隔 Text 节点的“常规”形式，也就是说，既没有相邻的 Text 节点，也没有空 Text 节点。
+			Node nNode=nlist.item(temp);
+			NodeList nlist=doc.getElementsByTagName("student");
+			//按文档顺序返回包含在文档中且具有给定标记名称的所有 Element 的 NodeList
+			// 返回集合中的第 index 个项。Node.getNodeName()  --返回节点名字
+			Node.getFirstChild()--返回节点的第一个子节点
+			Node.getLastChild()  --返回节点的最后一个子节点
+			Node.getnexSibling()--这些方法返回一个特定节点的下一个兄弟节点。
+			Node.getPreviousSibling()--这些方法返回一个特点节点的前一个兄弟节点
+			Node.getAttribute(attrName)--对于给定节点，则返回所请求的名字属性
+使用步骤：导入XML相关的软件包
+				import org.W3c.dom.*;
+				import javax.xml.parsers.*;
+				import java.io.*;
+		  创建DocumentBuilder
+		  DocumentBuilderFactory factory =
+			DocumentBuilderFactory.newInstance();
+			DocumentBuilder builder = factory.newDocumentBuilder();
+		  从文件或流中创建一个文档
+		  StringBuilder xmlStringBuilder = new StringBuilder();
+			xmlStringBuilder.append("<?xml version="1.0"?> <class> </class>");
+			ByteArrayInputStream input =  new ByteArrayInputStream(
+			   xmlStringBuilder.toString().getBytes("UTF-8"));
+			Document doc = builder.parse(input);
+		  提取根元素
+		  Element root = document.getDocumentElement();
+		  检查属性
+		  //returns specific attribute
+			getAttribute("attributeName"); 
+			//returns a Map (table) of names/values
+			getAttributes();
+		  检查子元素
+		  //returns a list of subelements of specified name
+			getElementsByTagName("subelementName"); 
+			//returns a list of all child nodes
+			getChildNodes();
+			
+范例1.  .xml
+			<?xml version="1.0"?>
+			<class>
+				<student rollno="393">
+					<firstname>dinkar</firstname>
+					<lastname>kad</lastname>
+					<nickname>dinkar</nickname>
+					<marks>85</marks>
+				</student>
+				<student rollno="493">
+					<firstname>Vaneet</firstname>
+					<lastname>Gupta</lastname>
+					<nickname>vinni</nickname>
+					<marks>95</marks>
+				</student>
+				<student rollno="593">
+					<firstname>jasvir</firstname>
+					<lastname>singn</lastname>
+					<nickname>jazz</nickname>
+					<marks>90</marks>
+				</student>
+			</class>
+		解析方式:
+			 try {
+     /** 创建DocumentBuilder*/
+     DocumentBuilderFactory dbFactory= DocumentBuilderFactory.newInstance();
+     DocumentBuilder dBuilder=dbFactory.newDocumentBuilder();
+      /**从文件或流创建一个文档*/
+      File input=new File("E:/java/ParserDemo/src/com/cheng/xml/dom/test.xml");
+      Document doc=dBuilder.parse(input);
+      doc.getDocumentElement().normalize();
+      /**提取根元素*/
+      System.out.println("Root Element: "+ doc.getDocumentElement().getNodeName());
+      /**检查子元素*/
+      NodeList nlist=doc.getElementsByTagName("student");
+      //按文档顺序返回包含在文档中且具有给定标记名称的所有 Element 的 NodeList
+      System.out.println("---------------------------");
+	  
+      for(int temp=0;temp<nlist.getLength();temp++){
+         Node nNode=nlist.item(temp);// 返回集合中的第 index 个项。
+         System.out.println("\nCurrrent Element:"
+          +nNode.getNodeName());
+         if(nNode.getNodeType()==Node.ELEMENT_NODE){
+            Element element=(Element)nNode;
+            System.out.println("Student rool no:"
+            +element.getAttribute("rollno"));
+
+            System.out.println("First name:"+
+            element.getElementsByTagName("firstname").item(0).getTextContent());
+          System.out.println("Last Name :"+
+           element.getElementsByTagName("lastname").item(0).getTextContent());
+
+          System.out.println("Nick Name:"+
+           element.getElementsByTagName("nickname").item(0).getTextContent());
+
+          System.out.println("Marks:"+
+           element.getElementsByTagName("marks").item(0).getTextContent());
+         }
+      }
+     } catch (SAXException e) {
+      e.printStackTrace();
+     } catch (IOException e) {
+      e.printStackTrace();
+     } catch (ParserConfigurationException e) {
+      e.printStackTrace();
+     }
+   
+  实例2:xml
+		<?xml version="1.0"?>
+		<cars>
+			<supercars company="Ferrari">
+				<carname type="formula one">Ferarri 101</carname>
+				<carname type="sports car">Ferarri 201</carname>
+				<carname type="sports car">Ferarri 301</carname>
+			</supercars>
+			<supercars company="Lamborgini">
+				<carname>Lamborgini 001</carname>
+				<carname>Lamborgini 002</carname>
+				<carname>Lamborgini 003</carname>
+			</supercars>
+			<luxurycars company="Benteley">
+				<carname>Benteley 1</carname>
+				<carname>Benteley 2</carname>
+				<carname>Benteley 3</carname>
+			</luxurycars>
+		</cars>
+	解析方式
+		   try {
+		  /** 创建DocumentBuilder*/
+		  DocumentBuilderFactory dbFactory= DocumentBuilderFactory.newInstance();
+		  DocumentBuilder dBuilder=dbFactory.newDocumentBuilder();
+		  /**从文件或流创建一个文档*/
+		  File input=new File("E:/java/ParserDemo/src/com/cheng/xml/dom/test2.xml");
+		  Document doc=dBuilder.parse(input);
+		  doc.getDocumentElement().normalize();
+		  /**提取根元素*/
+		  System.out.println("Root Element: "+ doc.getDocumentElement().getNodeName());
+		  /**检查子元素*/
+		  NodeList nlist=doc.getElementsByTagName("supercars");
+		  System.out.println("---------------------------");
+		  for(int temp=0;temp<nlist.getLength();temp++){
+		   Node nNode=nlist.item(temp);
+		   System.out.println("\nCurrrent Element:"
+			+nNode.getNodeName());
+		   if(nNode.getNodeType()==Node.ELEMENT_NODE){
+			Element element=(Element)nNode;
+			System.out.print("company:");
+			System.out.println(element.getAttribute("company"));
+			NodeList cList=element.getElementsByTagName("carname");
+			for(int count=0;count<cList.getLength();count++){
+			 Node node1=cList.item(count);
+			 if(node1.getNodeType()==node1.ELEMENT_NODE){
+			  Element car=(Element)node1;
+			  System.out.println("car name:"+car.getTextContent());
+			  System.out.println("car type:"+car.getAttribute("type"));
+			 }
+			}
+		   }
+		  }
+	  } catch (SAXException e) {
+	   e.printStackTrace();
+	  } catch (IOException e) {
+	   e.printStackTrace();
+	  } catch (ParserConfigurationException e) {
+	   e.printStackTrace();
+	  }
+	 }
+	 实例3 .xml
+	 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<cars>
+		<supercars company="Ferrari">
+			<carname type="formula one">Ferrari 101</carname>
+			<carname type="sports">Ferrari 202</carname>
+		</supercars>
+		<luxurycars company="Benteley">
+			<carname>Benteley 1</carname>
+			<carname>Benteley 2</carname>
+			<carname>Benteley 3</carname>
+		</luxurycars>
+	</cars>
+	解析方式
+	 try {
+       /**创建DocumentBuilder*/
+       DocumentBuilderFactory docFactory= DocumentBuilderFactory.newInstance();
+       DocumentBuilder docBuilder=docFactory.newDocumentBuilder();
+       /**从文件或流创建一个文档*/
+       File input=new File("E:\\java\\ParserDemo\\src\\com\\cheng\\xml\\dom\\test3.xml");
+       Document document=docBuilder.parse(input);
+       document.getDocumentElement().normalize();
+       /**提取根元素*/
+       System.out.println("Root Element: "+document.getDocumentElement().getNodeName());
+	   
+       Node cars=document.getFirstChild();
+       Node supercar=document.getElementsByTagName("supercars").item(0);
+       NamedNodeMap  attr=supercar.getAttributes();
+       Node nodeAttr=attr.getNamedItem("company");
+       nodeAttr.setTextContent("Lamborigini");
+
+       NodeList list =supercar.getChildNodes();
+       for(int i =0;i<list.getLength();i++) {
+        Node node = list.item(i);
+        if (node.getNodeType() == Node.ELEMENT_NODE) {
+         Element element = (Element) node;
+         if ("carname".equals(element.getNodeName())) {
+          if ("Ferrari 101".equals(element.getTextContent())) {
+           element.setTextContent("Lamborigini 001");
+          }
+          if ("Ferrari 202".equals(element.getTextContent())) {
+           element.setTextContent("Lamborigini 002");
+          }
+         }
+        }
+       }
+          NodeList childNodes=cars.getChildNodes();
+          for(int count =0;count<childNodes.getLength();count++){
+                Node node1 =childNodes.item(count);
+                if("luxurycars".equals(node1.getNodeName()))
+                     cars.removeChild(node1);
+                }
+                TransformerFactory transformerFactory=TransformerFactory.newInstance();
+                Transformer transformer=transformerFactory.newTransformer();
+                DOMSource source=new DOMSource(document);
+                System.out.println("---------------modified file------------------");
+                StreamResult consloleResult =new StreamResult(System.out);
+                transformer.transform(source,consloleResult);
+
+      } catch (ParserConfigurationException e) {
+       e.printStackTrace();
+      } catch (SAXException e) {
+       e.printStackTrace();
+      } catch (IOException e) {
+       e.printStackTrace();
+      } catch (TransformerConfigurationException e) {
+       e.printStackTrace();
+      } catch (TransformerException e) {
+       e.printStackTrace();
+      }

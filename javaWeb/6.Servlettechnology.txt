@@ -1,0 +1,287 @@
+Servlet是一种独立于平台和协议的服务器端的java技术，可以用来生成动态的web页面。Servlet是使用java servlet应用程序设计接口。
+Servlet通过创建一个框架来扩展服务器的能力，以提供web上进行请求和响应的服务，当客户机发送请求值服务器时，服务器可以
+将请求信息发送给servlet，并让servlet建立起服务器返回给客户机的响应。当启动web服务器或客户机第一次请求服务时。
+可以自动装入servlet，之后Servlet继续运行直到其他可惠及发出请求。主要功能：
+	a.创建并返回一个包含基于请求性质的动态内容完整的HTML页面
+	b.创建可嵌入到现有HTML中的一部分HTML页面
+	c.与其他服务器资源（包括数据库和基于java的应用程序）进行通信
+	d.用多个客户机处理连接，接收多个客户机的输入，并将结果传递到多个客户机上，例，servlet可以是多用户参与的游戏服务器。
+	e.当允许在单链接方式传送数据的情况下，在浏览器上打开服务器值applet的新连接，并将该连接保持在打开状态；但允许客户机和
+		服务器简单、高效地执行会话的情况下，applet也可以启动客户浏览器和服务器之间的连接，可以通过定制协议进行通信。
+	f.将定制的处理提供给所有服务器的标准程序。
+Servlet技术特点 servlet技术带给程序员最大的优势是他可以处理客户端传来的http请求，并返回一个响应。servlet是一个java类。
+		高效 在服务器上仅有一个java虚拟机在运行，他的优势在于当多个来自客户端的请求进行访问时，servlet为每个请求分配一个线程而不是进程。
+		方便 Servlet提供了大量的使用工具例程
+		跨平台
+		功能强大 ，在servlet中，许多使用传统CGI程序很难完成的任务都可以利用Servlet技术轻松完成
+		灵活性和可扩展性
+		共享数据 servlet之间通过共享数据可以很容易地实现数据库连接池。
+		安全
+	servlet 的生命周期
+		1.用户通过客户端浏览器请求服务器，服务器加载servlet，并创建servlet实例
+		2.容器调用servlet的init()方法
+		3.容器调用service() 方法，并将HttpServletRequest和HttpServletResponse对象传递给该方法，在service()方法中处理用户请求；
+		4.在Servlet中请求处理结束后，将结果返回给容器
+		5.容器将结果返回给客户端显示
+		6.当web浏览器关闭时，调用destroy()方法销毁Servlet实例。
+		说明：初始化和销毁只执行一次
+	jsp和servlet的区别
+		编程方法不同 2.servlet必须在编译以后才能执行 3.运行速度不一样
+		
+	servlet的代码结构
+		若要创建一个Servlet，则应使创建的类继承HttpServlet类，并覆盖doGet(),doPost(),方法之一或全部，doGet()he doPost()
+		方法都有俩个参数，分别是HttpServletRequest类型和HttpServletResponse类型，HttpServletRequest提供访问有关请求的信的方法，
+		例如表单数据。Http请求头等，HttpServletResponse除了提供用于指定Http应答状态（200,404等）应答头的方法之外，还提供了一个用于向客户端
+		发送数据的PrintWriter。对于简单的Servlet来说，他的大部分工作是通过println方法生成向客户端发送的页面。
+	  注意：doGet() 和doPost() 方法抛出俩个异常，因此必须在声明中包含他们，另外还必须导入java.io包，javax.servlet包
+			，以及javax.servlet.http包。
+	Servlet接口：
+		init()
+			在Servlet实例化后，Servlet容器会调用init()方法来初始化该对象，主要是为了让Servlet对象在处理客户
+			请求前可以完成一些初始化工作，例如：建立数据库的连接，获取配置信息等。对于每一个Servlet实例，init()
+			方法只能被调用一次。init()方法有一个类型为ServletConfig的参数，Servlet容器通过这个参数向Servlet传递
+			配置信息。Servlet使用ServletConfig对象从Web应用程序的配置信息中获取以名-值对形式提供的初始化参数。
+			另外，在Servlet中，还可以通过ServletConfig对象获取描述Servlet运行环境的ServletContext对象，使用该对
+			象，Servlet可以和它的Servlet容器进行通信。
+		Service()
+			容器调用service()方法来处理客户端的请求。要注意的是，在service()方法被容器调用之前，必须确保init()
+			方法正确完成。容器会构造一个表示客户端请求信息的请求对象（类型为ServletRequest）和一个用于对客户
+			端进行响应的响应对象（类型为ServletResponse）作为参数传递给service()。在service()方法中，Servlet
+			对象通过ServletRequest对象得到客户端的相关信息和请求信息，在对请求进行处理后，调用ServletResponse
+			对象的方法设置响应信息。
+		destroy()
+			当容器检测到一个Servlet对象应该从服务中被移除的时候，容器会调用该对象的destroy()方法，以便让
+			Servlet对象可以释放它所使用的资源，保存数据到持久存储设备中，例如将内存中的数据保存到数据库中，关
+			闭数据库的连接等。当需要释放内存或者容器关闭时，容器就会调用Servlet对象的destroy()方法，在Servlet
+			容器调用destroy()方法前，如果还有其他的线程正在service()方法中执行容器会等待这些线程执行完毕或者等
+			待服务器设定的超时值到达。一旦Servlet对象的destroy()方法被调用，容器不回再把请求发送给该对象。如果
+			需要改Servlet再次为客户端服务，容器将会重新产生一个Servlet对象来处理客户端的请求。在destroy()方法
+			调用之后，容器会释放这个Servlet对象，在随后的时间内，该对象会被java的垃圾收集器所回收。
+		getServletConfig()
+			该方法返回容器调用init()方法时传递给Servlet对象的ServletConfig对象，ServletConfig对象包含了Servlet
+			的初始化参数。
+		getServletInfo()
+			返回一个String类型的字符串，其中包括了关于Servlet的信息，例如，作者、版本和版权。该方法返回的应该
+			是纯文本字符串，而不是任何类型的标记。 
+	ServletConfig 接口
+			public interface ServletConfig
+			一个由servlet容器使用的servlet配置对象，用于在servlet初始化时向它传递信息。
+			getServletName()  方法概述：public java.lang.String getServletName()
+			该方法返回一个servlet实例的名称，该名称由服务器管理员提供。
+			getServletContext() 方法概述：public ServletContext getServletContext()
+			返回一个ServletContext对象的引用。
+			getInitParameter()方法概述：public java.lang.String getInitParameter(java.lang.String name)
+			返回一个由参数String name决定的初始化变量的值，如果该变量不存在，返回null。
+			getInitParameterNames()  方法概述：public java.util.Enumeration getInitParameterNames()
+			返回一个存储所有初始化变量的枚举函数。如果servlet没有初始化变量，返回一个空枚举函数。
+	HttpServletRequest接口 
+			getContentLength()：返回请求正文的长度。如果请求正文的长度位置，则返回-1.
+			getContentType()：获得请求正文的MIME类型。如果请求正文的类型未知，则返回null。
+			getInputStram()：返回用于读取请求正文的输入流。
+			getLocalAddr()：返回服务器短短的IP地址。
+			getLocalName()：返回服务器端的主机名。
+			getLocalPort（）：返回服务器端的FTP端口号。
+			getParameter（String name）：根据给定的请求参数名，返回来自客户请求中的匹配的请求参数值。
+		    getProtocal()：返回客户端和服务器端通信所用的协议的名称及版本号。
+			getReader（）：返回用户读取字符串形式的请求正文的BufferedReader对象。
+			getRemoteAddr（）：返回客户端的IP地址。
+			getRemoteHost（）：返回客户端的主机名。
+			getRemotePort（）：返回客户端的FTP端口号。
+			下面三个方法用户在请求范围内存取共享数据的方法：
+			setAttribute(String name , java.lang.Object object)：在请求范围内保存一个属性，参数name标识属性名，参数object标识属性值。
+			getAttribute(String name)：根据name参数给定的属性名，返回请求范围内的匹配的属性值。
+			removeAttribute(String name)：从请求范围内删除一个属性。
+			
+			HttpServletRequest接口提供了用于读取HTTP请求中的相关信息的方法：
+			getContextPath（）：返回客户端所请求访问的web应用的URL入口。例如，如果客户端访问的URL为http://localhost:8080/helloapp/info，那么该发放返回“/helloapp”。
+			getCookies()：返回HTTP请求中的所有的Cookie。
+			getHeader（String name）：返回HTTP请求头部的特定项。
+			getHeaderNames（）：返回一个Enumeration对象，它包含了HTTP请求头部的所有项目名。
+			getMethod（）：返回HTTP请求方式，如post，或get。
+			getRequestURI（）：返回HTTP请求的头部的第1行中的URI。
+			getQueryString（）：返回HTTP请求中的查询字符串
+	HttpSecvletResponse接口：
+			public void addHeader(Sreing name,String value)              
+			增加一个cookie到响应中，这个方法可多次调用，投置多个cookie
+			public void addHeader(String name,String value)                
+			将一个名称为name，值为value的响应报头添加到响应中
+			public void sendRedirect(String location)                                
+			发送一个临时的重定向响应到客户端，以便客户端访问新的URL
+			public void encodeURL(String url)                                               
+			使用sessionID对用于重定向的URL进行编码
+
+Servlet开发
+		Servlet的创建	
+				a.继承HttpServlet抽象类
+				b.重载适当的方法，如覆盖，doGet或doPost方法
+				c.如有Http请求信息的话，获取该信息，可通过调用HttpServletRequset类对象的下述方法获取
+				 getParameterNames()//获取请求中所有参数的名字
+				 getParameter() //获取请求中指定参数值
+				 getParameterValues() //获取请求中所有参数的值
+				d.生成Http响应， HttpServlet类对象生成响应，并将它返回到发出请求的客户机上，他的方法允许设置
+				"请求"标题和“响应主体”。“响应”对象还含有getWriter()方法以返回一个printWriter类对象。
+			配置	
+				 <!--Servlet配置-->
+					<!--指定名称路径-->
+					<servlet>
+						<description>Simple Servlet</description><!--servlet描述信息-->
+						<display-name>Servlet</display-name><!--发布时的Servlet名称-->
+						<servlet-name>myServlet</servlet-name><!--Servlet名称-->
+						<servlet-class>com.cheng.servlet.FirstTest</servlet-class><!--servlet类的路径-->
+						<!--对.jsp文件进行配置 <jsp-file>login.jsp</jsp-file>-->
+						<!--初始化参数-->
+						<init-param>
+							<!--在Servlet中可以通过init()方法体中通过getInitParameter()方法访问这些初始化参数-->
+							<param-name>number</param-name>
+							<param-value>1000</param-value>
+						</init-param>
+
+					</servlet>
+					<servlet>
+						<!--启动装入优先权-->
+						<servlet-name>ServletOne</servlet-name>
+						<servlet-class>com.cheng.servlet.FirstTest</servlet-class>
+						<load-on-startup>10</load-on-startup>
+					</servlet>
+					<servlet>
+						<servlet-name>ServletTwo</servlet-name>
+						<servlet-class>com.cheng.servlet.FirstTest</servlet-class>
+						<load-on-startup>20</load-on-startup>
+					</servlet>
+					<servlet>
+						<servlet-name>ServletThree</servlet-name>
+						<servlet-class>com.cheng.servlet.FirstTest</servlet-class>
+						<load-on-startup>Any Time</load-on-startup>
+					</servlet>
+					<!--上述代码中ServletOne先被载入，ServletTwo随后被载入，而ServletThree可以在任何时间被载入-->
+					<!--映射-->
+					<servlet-mapping>
+						<servlet-name>myServlet</servlet-name>
+						<url-pattern>/myServlet</url-pattern>
+					</servlet-mapping>
+			
+				package com.cheng.servlet;
+				import javax.servlet.ServletException;
+				import javax.servlet.http.HttpServlet;
+				import javax.servlet.http.HttpServletRequest;
+				import javax.servlet.http.HttpServletResponse;
+				import java.io.IOException;
+				import java.io.PrintWriter;
+				//扩展HttpServlet类
+
+				public class FirstTest extends HttpServlet {
+					  private  String message;
+					  @Override
+					  public void init()throws ServletException{
+
+					  }
+					  @Override
+					  //接收并处理所有get提交方式的请求
+					  public void doGet(HttpServletRequest request, HttpServletResponse response)  {
+						  response.setContentType("text/html;charset=gb2312");
+					   try {
+						PrintWriter out=response.getWriter();
+						out.println("保护环境，人人有责");
+					   } catch (IOException e) {
+						e.printStackTrace();
+					   }
+					  }
+				}
+Servlet过滤器 主要要来对客户端的请求进行过滤，再将过滤的请求转发给下一资源。过滤器实质就是在web应用服务器上
+				的一个web应用组件，用于拦截客户端与资源目标的请求，并对这些请求进行一定过滤处理在发送给目标资源。
+			过滤器核心对象：
+				Filter接口：
+					public void init(FilterConfig filterconfig)过滤器的初始化方法，此方法在过滤器初始化时调用
+					public void doFilter(ServletRequest request.ServletResponse response,FilterChain chain)
+					对请求进行过滤处理
+					public void destroy() 销毁方法，以便释放资源
+				FilterConfig接口
+					public String getFilterName() 用于获得过滤器的名字
+					public ServletContext getServletContext() 获取servlet上下文
+					public string getInitParameter(String name) 获取过滤器初始化参数
+					public Enumeration getInitParameterNames() 获取过滤器的所有初始化参数
+				filterChain接口
+					public void doFilter(ServlerRequest,request,ServlerResponse response)
+					此方法用来将过了后的请求传递给你下一个过滤器，如果此过滤器已经是最后一个，那么将传送给目标资源。
+				配置filter
+					<!--配置过滤器-->
+						<filter>
+							<!--过滤器名称-->
+							<filter-name>MyFilter</filter-name>
+							<!--过滤器完整类名-->
+							<filter-class>com.cheng.servlet.FirstFilter</filter-class>
+						</filter>
+						<!--过滤器映射-->
+						<filter-mapping>
+							<!--过滤器名称-->
+							<filter-name>MyFilter</filter-name>
+							<!--过滤器URL映射-->
+							<url-pattern>/myFilter</url-pattern>
+						</filter-mapping>
+				public class FirstFilter implements Filter {
+			  private int count;//来访数量
+			  @Override
+			  /**初始化方法*/
+			  public void init(FilterConfig filterConfig) throws ServletException {
+			   //初始化处理
+			   //获取初始化参数
+				 String param=filterConfig.getInitParameter("count");
+				 //将字符串转换成int
+				 count=Integer.valueOf(param);
+			  }
+
+			  @Override
+			  /**过滤处理方法*/
+			  public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws
+			   IOException, ServletException {
+				   count++;
+				   //将ServletRequest转换成HttpServletRequest
+				   HttpServletRequest req=(HttpServletRequest)request;
+				   //获取ServletContext
+					ServletContext context=req.getSession().getServletContext();
+					context.setAttribute("count",count);
+					//将来访人数放入ServletContext中
+					filterChain.doFilter(request,response);
+			  }
+
+			  @Override
+			  /**销毁方法*/
+			  public void destroy() {
+
+			  }
+		}
+Servlet监听器  作用是监听web容器的有效期事件，有容器管理，利用listerner接口监听在容器中某个执行程序，根据其应用程序
+		的需求做出适当的响应。
+	监听servlet上下文	
+	ServletContextListener接口
+		主要监听ServletContext的创建和删除，
+			contextInitialized(ServletContextEvent event) 通知正在收听的对象应用程序已经被加载及初始化
+			contextDestroyed(ServletContextEvent event) 通知正在收听的对象应用程序已经被载出，即关闭
+	ServletAttributeListener接口
+			attributeAdded(ServletContextAttributeEvent event) 若有对象加入Application的范围，通知正在收听的对象
+			attributeReplaced(ServletContextAttributeEvent event)  若在Application范围内一个对象取代另一个对象，通知正在收听的对象
+			attributeRemoved(ServletContextEvent event)  若有对象从application范围内删除，通知正在收听的对象
+	监听HTTP会话
+		HttpSessionListener接口
+		 sessionCreated(HttpSessionEvent event) 通知正在收听对象，session已经被加载，并初始化
+		 sessionDestroyed(HttpSessionEvent event) 通知正在收听对象，session已经被载出
+		 HttpSessionEvent类的主要方法是getSession() 可以通过该方法返回一个session对象
+		HttpSessionActivationListener接口
+			attributeAdded(ServletSessionbindingEvent event) 若有对象加入session的范围，通知正在收听的对象
+			attributeReplaced(ServletSessionbindingEvent event)  若在session范围内一个对象取代另一个对象，通知正在收听的对象
+			attributeRemoved(ServletSessionbindingEvent event)  若有对象从session范围内删除，通知正在收听的对象
+			HttpSessionBindingEvent类有三个方法getName() getSession() getValues()
+		HttpBindinglistener接口
+			valueBound(HttpSessionBindingEvent event) 当有对象加入session中时，会被调用
+			valueUnBound(HttpsessionBindingEvent event) 当有对象从session范围内移除时，会被自动调用
+		HttpSessionAttributeListener接口
+			sessinDidActicate(HttpSessionEvent event) 通知正在监听的对象，其session已经变为有效状态
+			sessinWillPassiavate(HttpSessionEvent event) 通知正在收听的对象，其session已经变为无效状态
+	监听Servlet请求
+		ServletRequestListener接口
+			requestInitalized(ServletRequestEvent event) 通知正在收听的对象，ServletRequest已经被初始化
+			requestDestroyed(ServletRequestEvent event) 通知正在收听的对象，ServletRequest已经被销毁
+		ServletRequestAttributeListener接口
+			attributeAdded(ServletRequestAttributeEvent event) 若有对象加入request的范围，通知正在收听的对象
+			attributeReplaced(ServletRequestAttributeEvent event)  若在request范围内一个对象取代另一个对象，通知正在收听的对象
+			attributeRemoved(ServletRequestAttributeEvent event)  若有对象从request范围内删除，通知正在收听的对象

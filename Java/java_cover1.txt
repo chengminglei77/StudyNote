@@ -1,0 +1,1127 @@
+容器
+  中接口特点如下：
+	.collection接口
+		表示一组对象，是收集的意思，就是把一组数据收集起来，子接口为 Set List
+		Set中数据没有顺序，不可以重复
+		list 中数据有顺序，可以重复
+	定义的方法：
+		boolean  add(Object element); 
+		boolean  remove(Object element); 
+		boolean  contains(Object element); 
+		int    size();  
+		boolean  isEmpty(); 
+		void  clear(); 
+		
+		Iterator  iterator(); 
+		boolean   containsAll(Collection c); 
+		boolean  addAll(Collection c); 
+		boolean  removeAll(Collection c); 
+		boolean  retainAll(Collection c);    //交集
+		Object[] toArray();
+	.List 
+		有序的collection,此接口的用户可以成对列表中的每个元素的插入位置进行精确的定位，用户可以根据
+		元素的整数索引（在列表中的位置）访问元素，并搜到列表当中的元素。
+		与set不同，列表通常允许重复的元素，更精确的讲列通常允许满足e1.equals(e2)条件的元素e1，e2并存，并且如果列表本身允许null元素的话，通常他们允许多个null元素
+		int index(Object o);//返回某一元素的索引，如果没有该元素返回-1；
+		ArrayList 底层用数组实现List,特点是，查询效率高，增删效率低，不安全。
+		LinkedList 底层是双向链表实现的list,特点是L:c查询效率低，增删效率高，线程不安全
+		Vector 底层用数组实现List特点，线程安全。
+	        List list = new ArrayList();
+			list.add("hello");
+			list.add(2);// 包装类：自动装箱！
+			list.add(new Integer(4));
+			list.add(new Date());
+			list.add(new Dog());
+			list.add(true);
+			System.out.println(list.isEmpty());
+			list.remove(new Date() + "<<<<<<<<<<<");// hashcode 与equals关系。
+			List list2 = new ArrayList();
+			list2.add("aa");
+			list2.add("bb");
+			list.add(list2);
+			System.out.println(list.size() + "个元素。");
+			//跟顺序的操作
+			String str = (String) list.get(0);
+			System.out.println(str);
+			list.set(0,"haha");
+			String str2 = (String) list.get(0);
+			System.out.println(str2);
+			System.out.println(list.size()+"个元素.");
+			
+		Arraylist的实现：
+			package com.xgcd.game;
+			public class SxtLinkedList /*implements List*/ {
+				private Node first;
+				private Node last;
+				private int size;
+				public void add(Object obj){
+					Node n = new Node();
+					if(first==null){
+						n.setPrevious(null);
+						n.setObj(obj);
+						n.setNext(null);
+						first = n;
+						last = n;
+					}else{
+						//直接往last节点后增加新的节点
+						n.setPrevious(last);
+						n.setObj(obj);
+						n.setNext(null);
+						last.setNext(n);
+						last = n;
+					}
+					size++；
+				}
+				public int size(){
+					return size;
+				}
+				private void rangeCheck(int index){
+					if(index<0||index>=size){
+						try {
+							throw new Exception();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				public Object get(int index){   //2
+					rangeCheck(index);
+					// 0 1 2 3 4
+					Node temp = node(index);
+					if(temp!=null){
+						return temp.obj;
+					}
+					return null;
+				}
+				public Node node(int index){
+					Node temp = null;
+					if(first!=null){
+						if (index < (size >> 1)) {
+							temp = first;
+							for(int i=0;i<index;i++){
+								temp = (Node)temp.next;
+							}
+						}else{
+							temp = last;
+							for (int i = size - 1; i > index; i--){
+								temp = (Node) temp.previous;
+							}
+						}
+					}
+					return temp;
+				}
+				public void remove(int index){
+					Node temp = node(index);
+					if(temp!=null){
+						Node up = (Node)temp.previous;
+						Node down = (Node)temp.next;
+						up.next = down;
+						down.previous = up;
+						size--;
+					}
+				}
+				public void add(int index,Object obj){
+					Node temp = node(index);
+					Node newNode = new Node();
+					newNode.obj = obj;
+					if(temp!=null){
+						Node up = (Node)temp.previous;
+						up.next = newNode;
+						newNode.previous = up;
+						newNode.next = temp;
+						temp.previous = newNode;
+						size++;
+					}
+				}
+				public void print(){
+					if(size==0)
+					{
+						System.out.println("该链表为空");
+					}else{
+					Node temp=first;
+					do{
+						System.out.println(temp.obj.toString());
+						temp=(Node)temp.getNext();
+					}while(temp!=null);
+					}
+				}
+				public static void main(String[] args) {
+					SxtLinkedList list = new SxtLinkedList();
+					list.add("aaa");
+					list.add("bbb");
+				   list.add(1,"BBBB");
+					list.add("ccc");
+					list.add("ddd");
+					list.add("eee");
+			//        list.remove(1);
+					list.print();
+
+				}
+
+
+			}
+			//用来表示节点
+				class Node{
+					public Object previous;
+					public Object obj;
+					public Object next;
+
+					public Object getPrevious() {
+						return previous;
+					}
+
+					public Node() {
+					}
+
+					public Node(Object previous, Object obj, Object next) {
+						this.previous = previous;
+						this.obj = obj;
+						this.next = next;
+					}
+
+					public Object getObj() {
+						return obj;
+					}
+
+					public Object getNext() {
+						return next;
+					}
+
+					public void setPrevious(Object previous) {
+						this.previous = previous;
+					}
+					public void setObj(Object obj) {
+						this.obj = obj;
+					}
+					public void setNext(Object next) {
+						this.next = next;
+					}
+				}
+	.Set 
+		HashSet采用哈希算法实现的Set
+		HashSet的底层是用HashMap实现的，因此查询效率较高，由于采用hashCode，算法直接确定元素的内存地址，增删效率也挺高的
+			Set s = new HashSet();
+			s.add("hello");
+			s.add(1);
+			s.add(3.14);
+			s.add(new Integer(4));
+			s.add(new Double(1.2));
+			s.add("hello");
+			System.out.println(s.size() + "个元素。");
+			System.out.println(s);
+	
+    Map的基本用法
+			import java.util.HashMap;
+			import java.util.Map;
+			  
+			/**
+			 * 测试Map的基本用法
+			 * @author Administrator
+			 *
+			 */
+			public class TestMap {
+				   public static void main(String[] args) {
+						  Map map = new HashMap();
+						  map.put("高琪", new Wife("张曼玉"));
+						  map.put("高琪", new Wife("张小玉"));
+						  map.put("张三", new Wife("杨幂"));
+			  
+						  Wife w = (Wife) map.get("高琪");
+						  
+			//            map.remove("高琪");
+						  
+			//            map.containsKey("张三");
+						  
+						  System.out.println(w.name); 
+						  
+				   }
+			  
+			}
+			  
+			class Wife {
+				   String name;
+				   public Wife(String name){
+						  this.name  = name;
+				   }
+			}
+		map实现		
+			package com.xgcd.Map;
+
+			public class XgdMap {
+				XgdEntry[] arr =new XgdEntry[100];
+				int size;
+				public void put(Object key,Object value){
+					XgdEntry e=new XgdEntry(key,value);
+					//查看重复键值
+					for(int i=0;i<size;i++){
+						if(arr[i].key.equals(key)){
+							arr[i].value=value;
+							return ;
+						}
+					}
+					arr[size++]=e;
+				}
+				public Object get(Object key){
+					for(int i=0;i<size;i++){
+						if(arr[i].key.equals(key))
+							return arr[i].value;
+					}
+					return null;
+				}
+				public boolean containsKey(Object key){
+					for(int i=0;i<size;i++){
+						if(arr[i].key.equals(key))
+							return true;
+					}
+					return false;
+				}
+
+				public void print(){
+					for(int i=0;i<size;i++){
+						System.out.println("key值："+arr[i].key+" value值："+arr[i].value);;
+					}
+				}
+				public void remove(Object key){
+					for(int i=0;i<size;i++){
+						if(arr[i].key.equals(key)||arr[i].value.equals(key)) {
+							arr[i].key=null;
+							arr[i].value=null;
+						}
+					}
+				}
+				public boolean containsValue(Object value){
+					for(int i=0;i<size;i++){
+						if(arr[i].value.equals(value))
+							return true;
+					}
+					return false;
+				}
+				public static void main(String[]args){
+					XgdMap m=new XgdMap();
+					m.put(1,"zhangsan");
+					m.put(2,"lisi");
+					m.put(3,"wangermazi");
+					m.remove(2);
+					m.print();
+					System.out.println(m.containsKey(1));
+					System.out.println(m.containsValue("zhangsan"));
+				}
+			}
+			class XgdEntry{
+				Object key;
+				Object value;
+				public XgdEntry() {
+				}
+				public XgdEntry(Object key, Object value) {
+					super();
+					this.key = key;
+					this.value = value;
+				}
+			}
+      Mapset相关用法
+	       Set接口的实现类常用的有HashSet，特点是：没有是顺序，不可以重复，重复的元素添加进行会出现覆盖的现象。
+		       HashMap map;
+				private static final Object PRESENT=new Object();
+				public XgdHashSet(){
+					map=new HashMap();
+				}
+				public int size(){
+					return map.size();
+				}
+				public void add(Object o){
+					map.put(o,PRESENT);
+					//set的不可重复就是利用了map里面键对象的不可重复！
+				}
+				public static void main(String[] args){
+					XgdHashSet s=new XgdHashSet();
+					s.add("aaa");
+					s.add(new String("aaa"));
+					System.out.println(s.size());
+					System.out.println(s);
+				}
+			}
+			
+	javabean		
+			import java.text.DateFormat;
+			import java.text.ParseException;
+			import java.text.SimpleDateFormat;
+			import java.util.Date;
+
+			public class Employee {
+				private int id;
+				private  String name;
+				private int salary;
+				private String department;
+				private String time;  //获取时间串
+				private Date hireDate;  //时间转换点
+
+				public Employee(int id, String name, int salary, String department,String time) {
+					super();
+					this.id = id;
+					this.name = name;
+					this.salary = salary;
+					this.department = department;
+					this.time= time;
+					//字符串转化成时间
+					DateFormat format=new SimpleDateFormat("yyyy-mm");
+					try{
+						this.hireDate=format.parse(time);
+					}catch (ParseException e){
+						e.printStackTrace();
+					}
+				}
+
+				public void setId(int id) {
+					this.id = id;
+				}
+
+				public void setName(String name) {
+					this.name = name;
+				}
+
+				public void setSalary(int salary) {
+					this.salary = salary;
+				}
+
+				public void setDepartment(String department) {
+					this.department = department;
+				}
+
+				public void setHireDate(Date hireDate) {
+					this.hireDate = hireDate;
+				}
+
+				public int getId() {
+					return id;
+				}
+
+				public String getName() {
+					return name;
+				}
+
+				public int getSalary() {
+					return salary;
+				}
+
+				public String getDepartment() {
+					return department;
+				}
+
+				public Date getHireDate() {
+					return hireDate;
+				}
+			}
+    容器封装数据测试
+			  Map map = new HashMap();
+              map.put("id", 0301);
+              map.put("name", "高琪");
+              map.put("salary", 3050);
+              map.put("department","项目部");
+              map.put("hireDate", "2007-10");  
+              
+              Map map2 = new HashMap();
+              map2.put("id", 0302);
+              map2.put("name", "马士兵");
+              map2.put("salary", 3500);
+              map2.put("department","教学部");
+              map2.put("hireDate", "2006-10");  
+              
+              Map map3 = new HashMap();
+              map3.put("id", 0302);
+              map3.put("name", "裴新");
+              map3.put("salary", 3500);
+              map3.put("department","教学部");
+              map3.put("hireDate", "2006-10");  
+              
+              
+              List<Map> list = new ArrayList<Map>();
+              
+              list.add(map);
+              list.add(map2);
+              list.add(map3);
+       }
+	Iterator接口：
+			所有实现了collection接口的容器类都有一个Iterator方法，用以返回一个实现Iterator接口的对象，
+			Iterator对象称作迭代器，用以方便的对容器元素的遍历操作，Iteratorji接口定义了如下方法：
+			boolean hashNext();//判断是否有元素没有被遍历
+			Object next();//返回游标当前位置的元素并将游标移动到下一个位置
+			void remove();//删除游标左边的元素，在执行next之后该操作只能执行一次。
+			public class ITerator {
+			public static void main(String[]args){
+				List list=new ArrayList();
+				list.add("aaa");
+				list.add("bbb");
+				list.add("ccc");
+				//通过索引遍历
+				for(int i = 0;i<list.size();i++){
+					System.out.println(list.get(i));
+				}
+				//通过迭代器遍历
+			   for(Iterator iter2 = list.iterator(); iter2.hasNext();){
+				   String str = (String) iter2.next();
+				   System.out.println(str);
+				}
+			}
+			 public static void main(String[] args) {
+              Map map = new HashMap();
+              map.put("aa", "aaaa");
+              map.put("bb", "bbbb");
+              
+              //遍历Map的第一种方式
+              Set keys = map.keySet();
+              for(Iterator iter = keys.iterator();iter.hasNext();){
+                     String keyStr = (String) iter.next();
+                     System.out.println(keyStr+"---"+map.get(keyStr)); 
+              }
+              
+              //遍历Map的第二种方式
+              Set<Map.Entry> set2 = map.entrySet();
+              for(Iterator iter = set2.iterator();iter.hasNext();){
+                     Entry e = (Map.Entry) iter.next();
+                     System.out.println(e.getKey()+"---"+e.getValue());
+              }
+       }
+	   
+	  1、继承|实现
+		1)、保留 -->泛型子类
+		2)、不保留 -->按需实现  可以泛型子类  也可以是非泛型子类
+		    属性|方法  -->随声明位置而定
+      2、擦除: 使用|继承|实现  没有指定类型 ，类似于Object.
+				  /**
+				 * 泛型父类，子类为富二代 
+				 * 1、保留父类泛型 -->子类为泛型
+				 * 2、不保留父类泛型 -->子类按需实现
+				 * 
+				 * 属性 及方法 类型 -->随位置而定
+				 * 1)、子类重写方法的类型 -->随父类而定
+				 * 子类新增方法的类型 -->随子类而定
+				 * 2)、子类中使用父类的属性 -->随父类而定
+				 * 子类中使用自己的属性 -->随子类而定
+				 * 
+				 * 
+				 * @author bj
+				 *
+				 */
+				public abstract class Father<T1,T2> {
+					   T1 age;
+					   public abstract void test(T2 name);
+				  
+				}
+				  
+				//保留  -->泛型子类
+				//1)、全部保留
+				class C1<T1,T2,A,B> extends Father<T1,T2>{     
+					   A Sex;
+					   @Override
+					   public void test(T2 name) {
+							  //this.age -->T1
+					   }
+					   
+					   public void test2(A a){
+							  
+					   }
+					   
+					   
+				}
+				//2)、部分保留
+				class C2<T2,A,B> extends Father<Integer,T2>{
+				  
+					   @Override
+					   public void test(T2 name) {
+							  //this.age -->Integer
+					   }
+					   
+				}
+				//不保留  -->按需实现
+				//1)、具体类型
+				class C3 extends Father<Integer,String>{
+					   
+					   @Override
+					   public void test(String name) {
+							  //this.age -->Integer
+					   }
+				}
+				//2)、没有类型 擦除 Object
+				class C4 extends Father{
+					   
+					   @Override
+					   public void test(Object name) {
+							  //this.age -->Object
+					   }
+				}
+				  
+				package com.bjsxt.gen02;
+				/**
+				 * 泛型接口  与 泛型类  同理
+				 * @author bj
+				 *
+				 */
+				public interface Comparator<T> {
+					   //全局常量
+					   public static final int MAX_VALUE=100;
+					   //公共抽象方法
+					   public abstract void test(T t);
+				}
+				  
+				//实现
+				class InterC1<A> implements Comparator{
+				  
+					   @Override
+					   public void test(Object t) {
+							  
+					   }
+				}
+				class InterC2<A> implements Comparator<Integer>{
+				  
+					   @Override
+					   public void test(Integer t) {
+							  // TODO Auto-generated method stub
+							  
+					   }
+				}
+				class InterC3<T,A> implements Comparator<T>{
+				  
+					   @Override
+					   public void test(T t) {
+							  
+					   }
+				}		 
+				泛型的擦除。				 
+				package com.bjsxt.gen02;				  
+				/**
+				 * 自定义泛型类 
+				 * 1、<> -->单个大写字母，尽可能见名知意 
+				 * 2、 
+				 * T Type 
+				 * K V Key Value 
+				 * E Element
+				 * 
+				 * 3、注意点: 
+				 * 泛型不能使用在静态属性上
+				 * 指定的类型不能为基本类型							 
+				 */
+				// T -->type 类型
+				public class MyStudent<T> {
+					   private T javase;
+					   //private static T test; //泛型不能使用在静态属性上
+					   public MyStudent() {
+					   }
+				  
+					   public MyStudent(T javase) {
+							  this.javase = javase;
+					   }
+				  
+					   public T getJavase() {
+							  return javase;
+					   }
+				  
+					   public void setJavase(T javase) {
+							  this.javase = javase;
+					   }
+				}
+				  
+				package com.bjsxt.gen02;
+				/**
+				 * 泛型的擦除: 使用时 |实现|继承 没有指定类型 ，
+				 * 类似于 Object ,不等同于 Object
+				 * @author bj
+				 *
+				 */
+				public class MyStuApp {
+				  
+					   public static void main(String[] args) {
+							  //擦除 -->没有指定 泛型的具体类型
+							  MyStudent student =new MyStudent();
+							  student.setJavase(100); //100 -->int -->Integer -->Object
+							  Object obj=student.getJavase();
+							  
+							  
+							  test(student);//编译不会类型检查
+							  MyStudent<Object> student2 =new MyStudent<Object>();
+							  //不等于 Object
+							  //test(student2);
+					   }					   
+					   public static void test(MyStudent<Integer> stu){  
+					   }				  
+				}
+				package com.bjsxt.gen03;
+ 
+				import java.util.ArrayList;
+				import java.util.List;
+				 
+				/**
+				 * ? -->通配符，类型不确定，用于声明变量|形参上
+				 * 不能用在
+				 * 1、创建对象
+				 * 2、创建泛型类 泛型方法 泛型接口上
+				 * 
+				 * 
+				 * @author bj
+				 *
+				 */
+				public class WildcardsTest {				 
+					   public static void main(String[] args) {
+							  //声明
+							  List<?> list =new ArrayList<Integer>();
+							  list =new ArrayList<String>();
+							  list =new ArrayList<Object>();        
+							  test(list);
+							 
+							  //编译错误 不能创建对象
+							  //list =new ArrayList<?>();							 
+					   }					  
+					   public static void test(List<?> list){
+							 
+					   }
+					  
+					   /*
+					   //不能用在泛型方法上
+					   public static <?> void test2(List<?> list){
+							 
+					   }
+					   */
+					   class Test<T>{						 
+					   }
+					   /*
+						//不能用在创建泛型类
+					   class Test2<?>{							 
+					   }
+					   */				 
+				}
+				泛型的上限
+     			package com.bjsxt.gen03;				 
+				import java.util.ArrayList;
+				import java.util.List;				 
+				/**
+				 * extends : 泛型的上限  <= 即子类或自身
+				 * 1、一般用于 限制操作
+				 * 2、不能使用在 添加数据上面，一般都是读取操作
+				 * 3、规则
+				 *  List<Fruit> -->List<? extends Fruit>
+				 *  List<Apple> -->List<? extends Fruit>
+				 *  List<? extends Apple> -->List<? extends Fruit>
+				 *  不能存放
+				 *  List<?>
+				 *  List<? extends Object>
+				 * 
+				 * @author bj
+				 *
+				 */
+				public class ExtendsTest {
+				 
+					   public static void main(String[] args) {
+							  //extends 为上限
+							  Test<Fruit> t1 =new Test<Fruit>();
+							  Test<Apple> t2 =new Test<Apple>();
+							  Test<Pear> t3 =new Test<Pear>();
+							 
+							 
+							  //规则 
+							  List<? extends Fruit> list1 =new ArrayList<Fruit>();
+							  test(list1);
+							  List<Fruit> list2 =new ArrayList<Fruit>();
+							  test(list2);
+							  List<Apple> list3 =new ArrayList<Apple>();
+							  test(list3);
+							  // ? extends Apple 
+							  List<? extends Apple> list4 =new ArrayList<FujiApple>();
+							  test(list4);
+							  //? -->为什么错误 ,因为 ? 等同于 ? extends Object
+							  List<?> list5=new ArrayList<Object>();
+							  List<? extends Object> list6=new ArrayList<Object>();
+							  //test(list6);
+							 
+							  List<FujiApple> app =new ArrayList<FujiApple>();            
+							  test(app);
+					   }
+					   //? extends Fruit
+					   public static void test(List<? extends Fruit> list){
+							  /*
+							  //不能用于添加数据
+							  list.add(new Apple());
+							  list.add(new FujiApple());
+							  list.add(new Pear());
+							  list.add(new Fruit());
+							  */
+							  list.add(null);
+					   }
+				 
+					   //泛型类
+					   static class Test<T extends Fruit>{
+							 
+					   }
+				}
+				 
+					
+				package com.bjsxt.gen03;
+				/**
+				 *  继承链
+				 *   Object
+				 *     | 
+				 *   Fruit
+				 *    /  \
+				 * Apple Pear
+				 *   |
+				 *  FujiApple
+				 * @author bj
+				 *
+				 */
+				public class Fruit {
+				 
+				}
+				class Apple extends Fruit{
+					  
+				}
+				class Pear extends Fruit{
+					  
+				}
+				class FujiApple extends Apple{
+					  
+				}
+				super,泛型的下限
+     			package com.bjsxt.gen03;
+				 
+				import java.util.ArrayList;
+				import java.util.List;
+				 
+				/**
+				 * super : 泛型的下限  >= 即父类或自身
+				 * 1、一般用于 下限操作
+				 * 2、能够添加数据上面，不能添加父对象
+				 * 3、规则
+				 *  List<Fruit> -->List<? super Apple>
+				 *  List<Apple> -->List<? super Apple>
+				 *  List<? super Fruit> -->List<?super Apple>
+				 *  不能存放
+				 *  List<? super FujiApple> -->List<?super Apple>
+				 *  
+				 * 
+				 * @author bj
+				 *
+				 */
+				public class SuperTest {
+				 
+					   public static void main(String[] args) {
+							  // >= 即父类或自身
+							  List<Apple> list1 =new ArrayList<Apple>();
+							  test(list1);
+							  List<Fruit> list2 =new ArrayList<Fruit>();
+							  test(list2);
+							  List<Object> list3 =new ArrayList<Object>();
+							  test(list3);
+							 
+							  //规则
+							  List<? super Apple> list4 =new ArrayList<Apple>();
+							  test(list4);
+							  List<? super Fruit> list5 =new ArrayList<Object>();
+							  test(list5);
+							  List<? super FujiApple> list6 =new ArrayList<Object>();
+							  //test(list6);
+							  List<?> list7 =new ArrayList<Object>();
+							  //test(list7);
+				 
+					   }
+					  
+					   public static void test(List<? super Apple> list){
+							  //不能添加 父类对象
+							  list.add(new Apple());
+							  list.add(new FujiApple());
+							  //list.add(new Fruit());
+					   }					  				 
+				}
+				泛型的嵌套。
+				package com.bjsxt.gen03;
+				public class Student<T> {
+					   private T score;
+				 
+					   public T getScore() {
+							  return score;
+					   }
+				 
+					   public void setScore(T score) {
+							  this.score = score;
+					   }				  
+				}
+				package com.bjsxt.gen03;
+				import java.util.Map.Entry;
+				import java.util.HashMap;
+				import java.util.Map;
+				import java.util.Set;
+				/**
+				 * 泛型嵌套 -->由外到内拆分
+				 * 
+				 * 
+				 * @author bj
+				 *
+				 */
+				public class StudentApp {
+				 
+					   public static void main(String[] args) {
+							  Student<String> stu =new Student<String>();          
+							  stu.setScore("优秀");
+							  System.out.println(stu.getScore());
+							 
+							  //泛型嵌套
+							  Bjsxt<Student<String>> bjsxt =new Bjsxt<Student<String>>();
+							  bjsxt.setStu(stu);
+							 
+							  stu=bjsxt.getStu();
+							  String score =stu.getScore();
+							  System.out.println(score);
+							 
+							 
+							  //HashMap -->使用泛型嵌套
+							  Map<String,String> map =new HashMap<String,String>();
+							  map.put("a", "java300");
+							  map.put("b", "马士兵javase");
+							 
+							  Set<Entry<String,String>> entrySet= map.entrySet();
+							  for(Entry<String,String> entry:entrySet){
+									 String key =entry.getKey();
+									 String value =entry.getValue();
+									 System.out.println(key+"-->"+value);
+							  }
+							 
+							 
+					   }
+				 
+				}
+				 
+				 
+				package com.bjsxt.gen03;
+				 
+				public class Bjsxt<T> {
+					   private T stu;
+				 
+					   public T getStu() {
+							  return stu;
+					   }
+				 
+					   public void setStu(T stu) {
+							  this.stu = stu;
+					   }
+					  
+				}
+				 
+				package com.bjsxt.gen03;
+				 
+				import java.util.ArrayList;
+				import java.util.List;
+				 
+				/**
+				 * 1、泛型没有多态
+				 * 2、泛型没有数组
+				 * @author bj
+				 *
+				 */
+				public class Others {
+				 
+					   public static void main(String[] args) {
+							  //多态
+							  Fruit f =new Apple();
+							  // 泛型没有多态
+							  //List<Fruit> list =new ArrayList<Apple>();
+							  List<? extends Fruit> list =new ArrayList<Apple>();
+							 
+							  //泛型没有数组
+							  //Fruit<String>[] arr =new Fruit<String>[10];
+							 
+							  //jdk1.7泛型简化
+							  List<Fruit> list2 =new ArrayList<>();
+					   }
+				 
+				}
+	迭代器
+	package com.xgcd.Iterator;
+
+		import java.util.Arrays;
+		import java.util.Iterator;
+
+		public class XgcdArrayList<E> implements java.lang.Iterable<E> {
+			//数组 存储值
+			private Object[] elem=new Object[5];
+			//实际大小
+			private int size =0;
+			public int size(){
+				return this.size;
+			}
+			/**
+			 * 在末尾添加元素
+			 * @param ele
+			 */
+			public void add(E ele){
+				if(this.size==elem.length){ //容量不够 -->扩容
+					elem=Arrays.copyOf(elem, elem.length+5);
+				}
+				elem[size] =ele; //数组中加入元素 最后
+				size++; //实际大小+1
+			}
+			public Iterator<E> iterator(){
+				return new Iterator<E>(){ //创建Iterator迭代器接口 实现类(没有名称)的对象
+					//计数器 -->指针  游标
+					private int coursor=-1;
+					//判断是否存在下一个
+					public boolean hasNext(){
+						return coursor+1<size;
+					}
+					//获取下一个
+					public E next(){
+						coursor++;
+						return (E)elem[coursor];
+					}
+					//删除下一个
+					public void remove(){
+						//移动数组元素
+						System.arraycopy(elem,
+								coursor+1, elem, coursor,
+								size-(coursor+1));
+						//实际大小-1
+						size--;
+						//回退
+						this.coursor--;
+					}
+				};
+			}
+			public static void main(String[] args) {
+				XgcdArrayList<Integer> list =new XgcdArrayList<Integer>();
+				list.add(1);//int -->Integer
+				list.add(2);
+				for(Integer e:list){
+					System.out.println(e);
+				}
+				System.out.println("----------------");
+				XgcdArrayList<String> list2 =new XgcdArrayList<String>();
+				list2.add("马云");
+				list2.add("马化腾");
+				list2.add("马天");
+				list2.add("弼马温");
+				Iterator<String> it =list2.iterator();
+				while(it.hasNext()){
+					String e =it.next();
+					System.out.println(e);
+				}
+			}
+
+		}
+//hashMap
+				package com.xgcd.HashMap;
+
+				import java.util.HashMap;
+				import java.util.Iterator;
+				import java.util.Map;
+				import java.util.Set;
+
+				/**
+				 * 分拣存储：1：N
+				 * 统计 单词 出现次数
+				 * this is a cat and that is a mice where is the food?
+				 * 思路
+				 * 1.分割字符串
+				 * 2.分拣存储
+				 * 3.按要求查看，单词出现次数
+				 *
+				 */
+				public class XgcdMapTest {
+					public static void main(String[] args){
+						//分割字符串
+						String[] arr="this is a cat and where is the food ?".split(" ");
+						//分拣存储
+						Map<String,Integer> map=new HashMap<String,Integer>();
+						for(String key:arr){
+							//System.out.println(key );//每个单词
+									 /*if(!map.containsKey(key)){ //查看是否存在该单词,不存在
+											map.put(key, 1);
+									 }else{ //存在
+											map.put(key, map.get(key)+1);
+									 }*/
+							Integer value =map.get(key);
+							if(null==value){ //不存在
+								map.put(key, 1);
+							}else{
+								map.put(key, value+1);
+							}
+						}
+						//3.查看每个单词出现的次数
+						Set<String> keySet = map.keySet();
+						//获取对象
+						Iterator<String> it = keySet.iterator();
+						while(it.hasNext()){
+							String key=it.next();
+							Integer vlaue= map.get(key);
+							System.out.println(key+"-->"+vlaue);
+						}
+					}
+				}
+package com.xgcd.StudentAndClassRoom;
+
+import java.util.*;
+
+public class MapDemo {
+    public static void main(String[] args){
+        //考试
+        List<Student> stulist=exam();
+        //分析成绩
+        Map<String,ClassRoom> map=count(stulist);
+        //3、查看成绩(总分 平均分)
+        view(map);
+    }
+    /**
+     * 查看每个班的总分和平均分  -->遍历 map
+     */
+    public static void view(Map<String,ClassRoom> map){
+        Set<String> keys =map.keySet();
+        //获取迭代器对象
+        Iterator<String> keysIt =keys.iterator();
+        //先判断
+        while(keysIt.hasNext()){
+            //再获取
+            String no =keysIt.next();
+            ClassRoom room =map.get(no);
+            //查看总分  计算平均分
+            double total =room.getTotal();
+            double avg =total/room.getStulist().size();
+            System.out.println(no+"-->"+total+"-->"+avg);
+        }
+
+    }
+
+    /**
+     * 统计分析
+     * 1、面向对象
+     * 2、分拣存储
+     */
+    public static Map<String,ClassRoom> count(List<Student> list){
+        Map<String,ClassRoom> map =new HashMap<String,ClassRoom>();
+        //1、遍历List
+        for(Student stu:list){
+            String no =stu.getNo(); //班级编号
+            double score =stu.getScore(); //分数
+            //2、分拣 查看是否存在 该 编号的班级
+            //如果不存在，创建班级
+            ClassRoom room =map.get(no);
+            if(null==room){
+                room =new ClassRoom(no);
+                map.put(no, room);
+            }
+            //存在，放入学生
+            room.getStulist().add(stu) ;//放入学生
+            room.setTotal(room.getTotal()+score); //计算总分
+        }
+        return map;
+    }
+
+    /**
+     * 模拟考试  测试数据 到List中
+     */
+    public static List<Student> exam(){
+        List<Student> list =new ArrayList<Student>();
+        //存放学生成绩
+        list.add(new Student("cheng","a",85));
+        list.add(new Student("wang","a",86));
+        list.add(new Student("zhang","a",89));
+        list.add(new Student("bao","b",80));
+        list.add(new Student("gao","b",80));
+        return list;
+
+    }
+}

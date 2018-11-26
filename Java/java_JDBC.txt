@@ -1,0 +1,148 @@
+//java连接jdbc的初始案例////////////////////////
+package com.sxxgd.cml;
+//1.导入包
+import java.sql.*;
+import java.sql.DriverManager;
+
+public class FirstDemo {
+ //JDBC driver name and Database url
+  static final String JDBC_DRIVER ="com.mysql.cj.jdbc.Driver";
+  static final String DB_URL="jdbc:mysql://localhost:3306/emp?useUnicode=true&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+  //database credentials--数据库名和密码
+  static final String USER="root";
+  static final String PASS="conan2007";
+
+ public static void main(String[]args){
+  Connection conn=null;
+  Statement stmt=null;
+  try{
+   //2.注册jdbc驱动
+   DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+   //Class.forName(JDBC_DRIVER);
+   //3.打开一个连接
+   System.out.println("Connecting to database....");
+   conn =DriverManager.getConnection(DB_URL,USER,PASS);
+   //4.执行查询
+   System.out.println("Creating statement...");
+   stmt = conn.createStatement();
+   String sql;
+   sql="SELECT id,first,last,age from Employees";
+   ResultSet rs=stmt.executeQuery(sql);
+   //5.从结果中提取数据
+   while(rs.next()){
+      int id =rs.getInt("id");
+      int age =rs.getInt("age");
+      String first=rs.getString("first");
+      String last = rs.getString("last");
+      //显示数据
+    System.out.println("id:"+id+" ,Age:"+age+" ,first"+first+" ,last"+last);
+   }
+   //6.清理资源环境
+   rs.close();
+   stmt.close();
+   conn.close();
+  }  catch (SQLException e) {
+   e.printStackTrace();
+  }finally{
+   //最终确定关闭资源
+   try{
+    if(stmt!=null)
+     stmt.close();
+   } catch (SQLException e) {
+    e.printStackTrace();
+   }
+   try{
+    if(conn!=null)
+       conn.close();
+   } catch (SQLException e) {
+    e.printStackTrace();
+   }
+  }
+  System.out.println("There are so thing wrong!");
+ }
+}
+驱动管理器DriverManager java.sql.DriverManager类负责管理驱动程序的基本服务，是jdbc的管理层，作用于用户和驱动程序之间，负责跟踪
+	可用的驱动程序，并在数据库和驱动程序之间建立连接。当调用getConnection方法请求数据库连接时，DriverManager类试图将
+	固定的 适当的Driver类，并检查定位到Driver类是否可以连接。
+DriverManager类提供的方法：
+		getConnection(String url,String user,String password) 
+		为静态方法，用来获得数据库连接，有三个入口参数，依次为要连接数据库的url，用户名和密码，返回类型为java.sql.Connection
+		setLoginTimeOut(int seconds)
+		为静态方法，用来设置每次等待建立数据库连接的最长时间
+		setlogWriter(java.io.PrintWriter out)
+		为静态方法，用来设置日志的输出对象
+		println(String message)
+		为静态方法，用来输出指定消息到当前的JDBC日志流
+数据库连接接口Connection
+		常用方法：
+			createStatement() 
+			创建并返回一个Statement实例，通常在执行无参数的SQL语句时创建该例
+			prepareStatement（） 
+			创建并返回一个prepareStatement实例，通常在执行包含参数的SQL语句时创建该实例，并对SQL语句进行了预编译处理
+			prepareCall() 
+			创建并返回一个callaleStatement实例，通常在调用数据库存储过程时调用该实例
+			setAutoCommit()
+			设置当前Connection自动提交模式，默认为true，即自动更改同步到数据库中，如果为false，需要通过执行commit（）或rollback()方法，手动更改到数据库中
+			getAutoCommit()
+			查看当前的connection实例是否处于自动提交模式，如果是则返回true
+			setSavepoint()
+			在当前事务中创建并放回一个savepoint实例，前提条件是当前的connection实例不能处于自动提交模式，否则会跑出异常。
+			releaseSavepoint()
+			从当前事务中移除指定的savepoint实例
+			setReadOnly()
+			设置当前connection实例的读取模式，默认为非只读模式，不能再事务中执行该操作，否则抛出移除，有个Boolean型的入口
+			，设为true，则表示开启只读模式，
+			isReadOnly()
+			查看当前实例是否为只读模式
+			isClosed()
+			查看当前的实例是否被关闭
+			commit()
+			将上一次提交回滚以来进行所有的更改同步到数据库，并释放Connection实例当前拥有的所有数据库锁定
+			rollback()
+			取消当前事务中的所有更改，并释放当前Connection实例拥有的所有数据库锁定吗，该模式只有在非只读模式下有效，
+			有一个入口参数savePoint实例的重载方法，用来取消savapoint实例之后的更改，并释放对应数据库的锁定。
+			close（） 立即释放connection实例占用的数据库和JDBC资源，即关闭数据库连接
+			
+执行SQL语句接口Statement
+			executeQuery(String sql)执行指定的静态SELECT语句，返回一个永远不能为空的ResultSet实例
+			executeUpdate(String sql)执行指定的静态INSERT UPDATE或DELETE语句，并返回一个int型数值，为同步更新记录的条数，
+			clearBatch() 清除位于batch中的所有SQL语句，如果驱动程序不支持批量处理将抛出异常
+			addBatch() 将制定的SQL命令添加到batch中，String型入口参数通常为静态的insert或update语句，如果驱动程序不支持批量吃力将抛出异常
+			executeBatch()所有执行Batch中的SQL语句，如果全部执行成功，则返回由更新计数组成的数组，数组元素的排序与SQL语句的添加顺序对应
+			数组元素有以下几种情况，大于 或等于0的数，说明SQL执行成功，为影响数据库中行数的更新计数；-2 说明SQL语句执行成功，但未得到
+			受影响的行数；-3说明SQL语句失败，仅当执行失败后继续执行后面的SQL语句时出现。
+			close（）
+			立即释放Statement实例占用的数据库和JDBC资源，即关闭Statement实例
+执行动态SQL语句接口PreparedStatement 继承于statement是Statemen接口的扩展，用来执行动态的SQL语句，既包含参数的SQL语句
+	常用方法：
+		PreparedStatement ps=connection.prepareStatement（"select* from table_name where id>? and ("name=?or name=?")"）;
+			ps.setInt(1,1);
+			ps.setString(2,"wgh");
+			ps.SetObject(3,"sk");
+			ResultSet rs=ps.executeQuery();
+			executeQuery() 执行前面包含参数的动态select语句，并返回衣蛾永不为null的ResultSet实例
+			executeUpdate()
+			clearParameters()
+			setXXX() 为指定参数设置xxx型值
+			close()
+执行存储过程接口CallableStatement 继承于PreparedStatement接口，用来执行SQL的存储过程，为参数赋值的方法使用从
+		preparedStatement中继承来的setXXX()方法，在执行存储过程之前，必须注册ou参数的类型，他们的值在执行或通过getXXX()方法检索的。
+		callableStatement可以返回一个或多个ResultSet实例。
+访问接口集接口ResultSet java.sql.ResultSet接口类似于一个数据表，通过该接口的实例可以获得检索的结果集。
+		常用方法：	
+		first(); 移动指针到第一行，若果结果集为空则返回false，否则为true，如果结果集类型为TYPE_FORWARD_ONLY,抛出异常
+		last();移动指针到最后一行，若果结果集为空则返回false，否则为true，如果结果集类型为TYPE_FORWARD_ONLY,抛出异常
+		previous() 移动指针到上一行，若果结果中存在上一行则返回true，否则为false，如果结果集类型为TYPE_FORWARD_ONLY,抛出异常
+		next()移动指针到下一行，若果结果中存在下一行则返回true，否则为false，如果结果集类型为TYPE_FORWARD_ONLY,抛出异常
+		beforeFirst（） 移动指针到第一行之前，
+		afterLast（） 移动指针到最后一行之后。
+		absolute()移动指针到指定行，有一个int型入口参数，整数表示从前向后编号，负数为从后向前，若果存在指定行则返回true，
+		relative()移动指针到相对于当前行的指定行，有一个int型入口参数，整数表示从前向后编号，负数为从后向前，若果存在指定行则返回true，
+		getRow（） 查看当前行的索引编号，索引编号从1开始，若果位于有效记录上则返回一个int型编号，否则为0；
+		findColumn() 查看指定列明的索引编号，该方法有一个String型入口参数，为要查看列的名称，若果包含指定列，则返回int索引编号，否则抛出异常。
+		isBeforeFirst()
+		isAfterLast()
+		isFirst()
+		isLast()
+		close()
+		
